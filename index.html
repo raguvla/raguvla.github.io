@@ -87,9 +87,176 @@
         <h2 class="title is-3">Experiments</h2>
         <div class="content has-text-justified">
           <p>
-            [Experiments content to be added]
+            Real-robot rollouts across five manipulation tasks. For each task we show
+            representative <span style="color:#1a9850;font-weight:600;">success</span> and
+            <span style="color:#d73027;font-weight:600;">failure</span> episodes for our method
+            (<b>Ours</b>) and two baselines (<b>Steering VLM</b>, <b>RiCL</b>).
           </p>
         </div>
+      </div>
+    </div>
+
+    <style>
+      .exp-task-title { margin-top: 2rem; margin-bottom: 0.75rem; }
+      .exp-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .exp-cell { text-align: center; }
+      .exp-cell h4 { font-weight: 600; margin-bottom: 0.4rem; }
+      .exp-cell video { width: 100%; border-radius: 6px; background: #000; }
+      .exp-clip { margin-bottom: 0.6rem; }
+      .exp-label {
+        display: inline-block; font-size: 0.8rem; font-weight: 600;
+        padding: 1px 8px; border-radius: 10px; margin-bottom: 0.25rem;
+      }
+      .exp-success { color: #1a9850; }
+      .exp-fail { color: #d73027; }
+      .exp-na {
+        display: flex; align-items: center; justify-content: center;
+        aspect-ratio: 4/3; background: #f0f0f0; color: #999;
+        border-radius: 6px; font-size: 0.85rem;
+      }
+      @media (max-width: 768px) {
+        .exp-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+
+    <div class="columns is-centered">
+      <div class="column is-full">
+
+        <!-- Open Red Cabinet -->
+        <h3 class="title is-4 has-text-centered exp-task-title">Open Red Cabinet</h3>
+        <div class="exp-grid">
+          <div class="exp-cell">
+            <h4>Ours</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_red_cabinet_ours_success.mp4" type="video/mp4"></video></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_red_cabinet_ours_fail.mp4" type="video/mp4"></video></div>
+          </div>
+          <div class="exp-cell">
+            <h4>Steering VLM</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_red_cabinet_steering_vlm_success.mp4" type="video/mp4"></video></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_red_cabinet_steering_vlm_fail.mp4" type="video/mp4"></video></div>
+          </div>
+          <div class="exp-cell">
+            <h4>RiCL</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <div class="exp-na">N/A</div></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_red_cabinet_ricl_fail.mp4" type="video/mp4"></video></div>
+          </div>
+        </div>
+
+        <!-- Open Upper Drawer -->
+        <h3 class="title is-4 has-text-centered exp-task-title">Open Upper Drawer</h3>
+        <div class="exp-grid">
+          <div class="exp-cell">
+            <h4>Ours</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_upper_drawer_ours_success.mp4" type="video/mp4"></video></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_upper_drawer_ours_fail.mp4" type="video/mp4"></video></div>
+          </div>
+          <div class="exp-cell">
+            <h4>Steering VLM</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_upper_drawer_steering_vlm_success.mp4" type="video/mp4"></video></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_upper_drawer_steering_vlm_fail.mp4" type="video/mp4"></video></div>
+          </div>
+          <div class="exp-cell">
+            <h4>RiCL</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <div class="exp-na">N/A</div></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_upper_drawer_ricl_fail.mp4" type="video/mp4"></video></div>
+          </div>
+        </div>
+
+        <!-- Close Microwave -->
+        <h3 class="title is-4 has-text-centered exp-task-title">Close Microwave</h3>
+        <div class="exp-grid">
+          <div class="exp-cell">
+            <h4>Ours</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/close_microwave_ours_success.mp4" type="video/mp4"></video></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/close_microwave_ours_fail.mp4" type="video/mp4"></video></div>
+          </div>
+          <div class="exp-cell">
+            <h4>Steering VLM</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/close_microwave_steering_vlm_success.mp4" type="video/mp4"></video></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/close_microwave_steering_vlm_fail.mp4" type="video/mp4"></video></div>
+          </div>
+          <div class="exp-cell">
+            <h4>RiCL</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <div class="exp-na">N/A</div></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/close_microwave_ricl_fail.mp4" type="video/mp4"></video></div>
+          </div>
+        </div>
+
+        <!-- Towel on Plate -->
+        <h3 class="title is-4 has-text-centered exp-task-title">Towel on Plate</h3>
+        <div class="exp-grid">
+          <div class="exp-cell">
+            <h4>Ours</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/towel_on_plate_ours_success.mp4" type="video/mp4"></video></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/towel_on_plate_ours_fail.mp4" type="video/mp4"></video></div>
+          </div>
+          <div class="exp-cell">
+            <h4>Steering VLM</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/towel_on_plate_steering_vlm_success.mp4" type="video/mp4"></video></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/towel_on_plate_steering_vlm_fail.mp4" type="video/mp4"></video></div>
+          </div>
+          <div class="exp-cell">
+            <h4>RiCL</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <div class="exp-na">N/A</div></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/towel_on_plate_ricl_fail.mp4" type="video/mp4"></video></div>
+          </div>
+        </div>
+
+        <!-- Wipe Table -->
+        <h3 class="title is-4 has-text-centered exp-task-title">Wipe Table</h3>
+        <div class="exp-grid">
+          <div class="exp-cell">
+            <h4>Ours</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/wipe_table_ours_success.mp4" type="video/mp4"></video></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <div class="exp-na">N/A</div></div>
+          </div>
+          <div class="exp-cell">
+            <h4>Steering VLM</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/wipe_table_steering_vlm_success.mp4" type="video/mp4"></video></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/wipe_table_steering_vlm_fail.mp4" type="video/mp4"></video></div>
+          </div>
+          <div class="exp-cell">
+            <h4>RiCL</h4>
+            <div class="exp-clip"><span class="exp-label exp-success">Success</span>
+              <div class="exp-na">N/A</div></div>
+            <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
+              <video controls muted loop playsinline preload="metadata"><source src="./static/videos/wipe_table_ricl_fail.mp4" type="video/mp4"></video></div>
+          </div>
+        </div>
+
       </div>
     </div>
     <!--/ Experiments. -->

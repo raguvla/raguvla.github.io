@@ -141,6 +141,55 @@
       .warp-head.is-right { margin-top: 0.5rem; }
     }
 
+    /* Source-demo filmstrip -> warped target */
+    .warp-stage {
+      display: grid;
+      grid-template-columns: 5fr 3rem 5fr;
+      gap: 0.5rem 0;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+    .warp-stage-head { align-self: start; }
+    .filmstrip {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    .src-tile { position: relative; }
+    .src-tile video {
+      width: 100%;
+      border-radius: 6px;
+      background: #000;
+      display: block;
+    }
+    .src-tile.is-featured video {
+      outline: 3px solid #b22222;
+      outline-offset: -3px;
+    }
+    .src-tile .src-tag {
+      position: absolute;
+      left: 6px; bottom: 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(178, 34, 34, 0.92);
+      border-radius: 8px;
+      padding: 0 7px;
+      pointer-events: none;
+    }
+    .warped-stack { display: flex; flex-direction: column; gap: 0.6rem; }
+    .warped-stack video {
+      width: 100%;
+      border-radius: 8px;
+      background: #000;
+      display: block;
+    }
+    .warp-stage .warp-viewlabel { margin-top: 0.15rem; }
+    @media (max-width: 768px) {
+      .warp-stage { grid-template-columns: 1fr; }
+      .warp-stage .warp-arrow { transform: rotate(90deg); margin: 0.25rem 0; }
+    }
+
     /* Key results */
     .result-cards {
       display: grid;
@@ -191,7 +240,7 @@
     .exp-fail { color: #d73027; }
     .exp-na {
       display: flex; align-items: center; justify-content: center;
-      aspect-ratio: 4/3; background: #f0f0f0; color: #999;
+      aspect-ratio: 896/224; background: #f0f0f0; color: #999;
       border-radius: 6px; font-size: 0.85rem;
     }
     @media (max-width: 768px) {
@@ -320,7 +369,7 @@
             robotics datasets are still domain-shifted in viewpoint, scene geometry, and embodiment; and
             <b>(3)&nbsp;Context-efficient adaptation</b> &mdash; VLAs are often too small to concatenate retrieved
             examples into their input context. RAGu addresses all three with a coarse-to-fine
-            <b>retrieve&nbsp;&rarr;&nbsp;warp&nbsp;&rarr;&nbsp;steer</b> pipeline that turns cross-domain
+            <b>warp&nbsp;&rarr;&nbsp;retrieve&nbsp;&rarr;&nbsp;steer</b> pipeline that turns cross-domain
             demonstrations into an inference-time guidance field for a frozen flow-matching VLA.
           </p>
         </div>
@@ -344,57 +393,41 @@
           <div class="step-card">
             <div class="step-num">1</div>
             <div class="step-body">
-              <h5>Preliminary retrieval &mdash; semantic task-category filtering</h5>
+              <h5>Warp &mdash; cross-domain trajectories into the target scene</h5>
               <p>
                 Large unstructured datasets (e.g., DROID) or simulation benchmarks (e.g., Meta-World) are first
                 filtered into a ~100-trajectory pool using semantic keywords for broad task dynamics such as
-                <i>pick-and-place</i>, <i>wiping</i>, or <i>closing</i> &mdash; ensuring structural compatibility
-                with the target task before any expensive computation.
+                <i>pick-and-place</i>, <i>wiping</i>, or <i>closing</i>. Because cross-domain scenes rarely share
+                object instances, strict in-domain visual matching is replaced with semantic bounding boxes for
+                task-relevant entities (via Grounding DINO), localizing target waypoints in the new scene. Each
+                source trajectory&rsquo;s 3D waypoints are then warped into the target geometry. Crucially, warped
+                paths are used only as <b>spatial priors</b> &mdash; the VLA&rsquo;s innate generalization manages
+                the closed-loop manipulation, avoiding the unreliability of directly executing warped paths with
+                inverse kinematics.
               </p>
             </div>
           </div>
           <div class="step-card">
             <div class="step-num">2</div>
             <div class="step-body">
-              <h5>Cross-domain trajectory warping</h5>
+              <h5>Retrieve &mdash; coarse-to-fine, policy-aligned</h5>
               <p>
-                Cross-domain scenes rarely share object instances, so strict in-domain visual matching is replaced
-                with semantic bounding boxes for task-relevant entities (via Grounding DINO), localizing target
-                waypoints in the new scene. Each source trajectory&rsquo;s 3D waypoints are then warped into the
-                target geometry. Crucially, warped paths are used only as <b>spatial priors</b> &mdash; the
-                VLA&rsquo;s innate generalization manages the closed-loop manipulation, avoiding the unreliability
-                of directly executing warped paths with inverse kinematics.
+                <b>Coarse (static):</b> for each task-dynamics group, a reference trajectory that is geometrically
+                relevant and compatible with the VLA prior anchors a Dynamic Time Warping (DTW) pruning step,
+                keeping only the top-<i>K</i> warped candidates (e.g., K=8 for real-robot, K=16 for RoboLab, K=3
+                for the humanoid).
+                <b>Fine (inference-time):</b> in the control loop, the VLA&rsquo;s predicted action chunk is mapped
+                to a Cartesian end-effector path via forward kinematics, and RAGu selects the candidate whose
+                tracking-cost <b>gradient has the smallest norm</b> &mdash; the trajectory requiring the least
+                change to the VLA&rsquo;s current dynamics, hence closest to the policy&rsquo;s own intent. Only
+                this fine stage runs in the loop, once per inference at the first denoising step.
               </p>
             </div>
           </div>
           <div class="step-card">
             <div class="step-num">3</div>
             <div class="step-body">
-              <h5>Primary retrieval &mdash; coarse static filtering via DTW</h5>
-              <p>
-                For each task-dynamics group, a reference trajectory that is geometrically relevant and compatible
-                with the VLA prior anchors a Dynamic Time Warping (DTW) pruning step, keeping only the
-                top-<i>K</i> warped candidates (e.g., K=8 for real-robot, K=16 for RoboLab, K=3 for the humanoid).
-              </p>
-            </div>
-          </div>
-          <div class="step-card">
-            <div class="step-num">4</div>
-            <div class="step-body">
-              <h5>Secondary retrieval &mdash; fine-grained inference-time policy alignment</h5>
-              <p>
-                In the control loop, the VLA&rsquo;s predicted action chunk is mapped to a Cartesian end-effector
-                path via forward kinematics. Among the K candidates, RAGu selects the trajectory whose tracking-cost
-                <b>gradient has the smallest norm</b> &mdash; i.e., the candidate requiring the least change to the
-                VLA&rsquo;s current dynamics, hence closest to the policy&rsquo;s own intent. This is the only
-                retrieval stage that runs in the loop, and it happens once per inference, at the first denoising step.
-              </p>
-            </div>
-          </div>
-          <div class="step-card">
-            <div class="step-num">5</div>
-            <div class="step-body">
-              <h5>Test-time steering with action denoising</h5>
+              <h5>Steer &mdash; test-time guidance of the action denoising</h5>
               <p>
                 The selected warped trajectory instantiates an energy function whose gradient is subtracted from the
                 flow-matching velocity field (<i>v<sub>guided</sub> = v &minus; &gamma;&nabla;L<sub>warp</sub></i>),
@@ -406,60 +439,96 @@
         </div>
 
         <!-- ============================== Warping showcase -->
-        <h3 class="title is-4" style="margin-top: 3rem;">Retrieve &rarr; Warp &rarr; Steer, in action</h3>
+        <h3 class="title is-4" style="margin-top: 3rem;">Warp &rarr; Retrieve &rarr; Steer, in action</h3>
         <div class="content has-text-justified">
           <p>
-            The clips below trace a single retrieved demonstration through the full RAGu pipeline on the real robot.
-            A cross-domain source demonstration is retrieved from DROID (left; overlaid line shows its 3D
-            end-effector trajectory, yellow markers its waypoints). Its trajectory is then <b>warped</b> into the
-            target scene via semantic correspondences (right) &mdash; note the completely different table, objects,
-            and background. Finally, the warped trajectory steers the frozen &pi;<sub>0.5</sub> policy to execute
-            the task in the real world (bottom).
+            The clips below show the RAGu pipeline on the real robot. RAGu draws on <b>many</b> cross-domain
+            source demonstrations from DROID (left; the rainbow curve traces each demo&rsquo;s 3D end-effector
+            trajectory, yellow marks the gripper) &mdash; different tables, objects, cameras, and backgrounds.
+            All of their trajectories are <b>warped</b> into the target scene via semantic correspondences
+            (right; one warped candidate shown from two camera views). At run time, RAGu <b>retrieves</b> the
+            warped candidate best aligned with the VLA&rsquo;s current intent and uses it to <b>steer</b> the
+            frozen &pi;<sub>0.5</sub> policy in the real world (bottom).
           </p>
         </div>
 
         <div class="warp-pipeline">
-          <div class="warp-grid">
-            <div class="warp-head">
-              <span class="warp-badge">Step 1</span> Retrieved source demo <span style="color:#777;font-weight:400;">(cross-domain, DROID)</span>
+          <div class="warp-stage">
+            <div class="warp-stage-head">
+              <div class="warp-head">
+                <span class="warp-badge">Step 1</span> Source demos <span style="color:#777;font-weight:400;">(cross-domain, DROID)</span>
+              </div>
             </div>
             <div></div>
-            <div class="warp-head is-right">
-              <span class="warp-badge">Step 2</span> Trajectory warped into target scene
+            <div class="warp-stage-head">
+              <div class="warp-head is-right">
+                <span class="warp-badge">Step 1</span> Warped into the target scene
+              </div>
             </div>
 
-            <div>
-              <video autoplay muted loop playsinline preload="auto">
-                <source src="./static/videos/method/demo_trajectory_cam1.mp4" type="video/mp4">
-              </video>
-              <div class="warp-viewlabel">Camera view 1</div>
-            </div>
-            <div class="warp-arrow">&rarr;</div>
-            <div>
-              <video autoplay muted loop playsinline preload="auto">
-                <source src="./static/videos/method/warped_trajectory_cam1.mp4" type="video/mp4">
-              </video>
-              <div class="warp-viewlabel">Camera view 1</div>
+            <div class="filmstrip">
+              <div class="src-tile is-featured">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_cup.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">warped &rarr;</span>
+              </div>
+              <div class="src-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_bowl.mp4" type="video/mp4">
+                </video>
+              </div>
+              <div class="src-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_marker.mp4" type="video/mp4">
+                </video>
+              </div>
+              <div class="src-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_kitchen.mp4" type="video/mp4">
+                </video>
+              </div>
+              <div class="src-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_blocks.mp4" type="video/mp4">
+                </video>
+              </div>
+              <div class="src-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_dining.mp4" type="video/mp4">
+                </video>
+              </div>
             </div>
 
-            <div>
-              <video autoplay muted loop playsinline preload="auto">
-                <source src="./static/videos/method/demo_trajectory_cam2.mp4" type="video/mp4">
-              </video>
-              <div class="warp-viewlabel">Camera view 2</div>
-            </div>
             <div class="warp-arrow">&rarr;</div>
-            <div>
-              <video autoplay muted loop playsinline preload="auto">
-                <source src="./static/videos/method/warped_trajectory_cam2.mp4" type="video/mp4">
-              </video>
-              <div class="warp-viewlabel">Camera view 2</div>
+
+            <div class="warped-stack">
+              <div>
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_trajectory_cam1.mp4" type="video/mp4">
+                </video>
+                <div class="warp-viewlabel">Camera view 1</div>
+              </div>
+              <div>
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_trajectory_cam2.mp4" type="video/mp4">
+                </video>
+                <div class="warp-viewlabel">Camera view 2</div>
+              </div>
             </div>
           </div>
+          <p class="warp-note" style="margin-top:0.5rem;">
+            Six of the ~100 pick-and-place source demonstrations used by RAGu. The
+            <span style="color:#b22222;font-weight:700;">highlighted</span> demo is the candidate shown warped
+            into the target scene on the right.
+          </p>
 
           <div class="warp-down">&darr;</div>
           <div class="warp-head" style="margin-bottom: 0.6rem;">
-            <span class="warp-badge is-run">Step 3</span> Guided rollout &mdash; frozen &pi;<sub>0.5</sub> steered by the warped trajectory
+            <span class="warp-badge">Step 2</span> Retrieve
+            <span style="color:#777;font-weight:400;">(best policy-aligned candidate)</span>
+            &nbsp;+&nbsp;
+            <span class="warp-badge is-run">Step 3</span> Steer &mdash; frozen &pi;<sub>0.5</sub> guided rollout
           </div>
           <div class="warp-run">
             <video autoplay muted loop playsinline preload="auto">
@@ -467,8 +536,9 @@
             </video>
           </div>
           <p class="warp-note">
-            The blue&ndash;cyan curve is the 3D end-effector trajectory; yellow overlays mark waypoints and detected
-            task-relevant entities. The bottom strip shows the actual robot execution from multiple cameras.
+            At the first denoising step of each inference, RAGu retrieves the warped candidate whose guidance
+            gradient is smallest &mdash; the one closest to the policy&rsquo;s own intent &mdash; and steers the
+            denoising toward it. The strip shows the actual robot execution from multiple cameras.
           </p>
         </div>
       </div>

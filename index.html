@@ -162,7 +162,12 @@
       background: #000;
       display: block;
     }
-    .src-tile.is-featured video {
+    .src-tile.is-featured video,
+    .src-tile.is-selected video {
+      outline: 3px solid #1F7A1F;
+      outline-offset: -3px;
+    }
+    .src-tile.is-discarded video {
       outline: 3px solid #b22222;
       outline-offset: -3px;
     }
@@ -172,10 +177,13 @@
       font-size: 0.65rem;
       font-weight: 700;
       color: #fff;
-      background: rgba(178, 34, 34, 0.92);
+      background: rgba(31, 122, 31, 0.92);
       border-radius: 8px;
       padding: 0 7px;
       pointer-events: none;
+    }
+    .src-tile.is-discarded .src-tag {
+      background: rgba(178, 34, 34, 0.92);
     }
     .warped-stack { display: flex; flex-direction: column; gap: 0.6rem; }
     .warped-stack video {
@@ -472,7 +480,7 @@
             <div></div>
             <div class="warp-stage-head">
               <div class="warp-head is-right">
-                <span class="warp-badge">Step 1</span> Warped into the target scene
+                <span class="warp-badge">Step 2</span> Warped into the target scene
               </div>
             </div>
 
@@ -481,32 +489,37 @@
                 <video autoplay muted loop playsinline preload="auto">
                   <source src="./static/videos/method/sources/src_cup.mp4" type="video/mp4">
                 </video>
-                <span class="src-tag">warped &rarr;</span>
+                <span class="src-tag">Reference trajectory</span>
               </div>
-              <div class="src-tile">
+              <div class="src-tile is-selected">
                 <video autoplay muted loop playsinline preload="auto">
                   <source src="./static/videos/method/sources/src_bowl.mp4" type="video/mp4">
                 </video>
+                <span class="src-tag">selected</span>
               </div>
-              <div class="src-tile">
+              <div class="src-tile is-selected">
                 <video autoplay muted loop playsinline preload="auto">
                   <source src="./static/videos/method/sources/src_marker.mp4" type="video/mp4">
                 </video>
+                <span class="src-tag">selected</span>
               </div>
-              <div class="src-tile">
+              <div class="src-tile is-discarded">
                 <video autoplay muted loop playsinline preload="auto">
                   <source src="./static/videos/method/sources/src_kitchen.mp4" type="video/mp4">
                 </video>
+                <span class="src-tag">discarded</span>
               </div>
-              <div class="src-tile">
+              <div class="src-tile is-discarded">
                 <video autoplay muted loop playsinline preload="auto">
                   <source src="./static/videos/method/sources/src_blocks.mp4" type="video/mp4">
                 </video>
+                <span class="src-tag">discarded</span>
               </div>
-              <div class="src-tile">
+              <div class="src-tile is-discarded">
                 <video autoplay muted loop playsinline preload="auto">
                   <source src="./static/videos/method/sources/src_dining.mp4" type="video/mp4">
                 </video>
+                <span class="src-tag">discarded</span>
               </div>
             </div>
 
@@ -529,16 +542,18 @@
           </div>
           <p class="warp-note" style="margin-top:0.5rem;">
             Six of the ~100 pick-and-place source demonstrations used by RAGu. The
-            <span style="color:#b22222;font-weight:700;">highlighted</span> demo is the candidate shown warped
-            into the target scene on the right.
+            <span style="color:#1F7A1F;font-weight:700;">reference trajectory</span> anchors DTW pruning:
+            <span style="color:#1F7A1F;font-weight:700;">selected</span> candidates are retained in the top-<i>K</i>
+            pool and warped into the target scene (right), while
+            <span style="color:#b22222;font-weight:700;">discarded</span> ones are pruned.
           </p>
 
           <div class="warp-down">&darr;</div>
           <div class="warp-head" style="margin-bottom: 0.6rem;">
-            <span class="warp-badge">Step 2</span> Retrieve
+            <span class="warp-badge">Step 3</span> Retrieve
             <span style="color:#777;font-weight:400;">(best policy-aligned candidate)</span>
             &nbsp;+&nbsp;
-            <span class="warp-badge is-run">Step 3</span> Steer &mdash; frozen &pi;<sub>0.5</sub> guided rollout
+            <span class="warp-badge is-run">Step 4</span> Steer &mdash; frozen &pi;<sub>0.5</sub> guided rollout
           </div>
           <div class="warp-run">
             <video autoplay muted loop playsinline preload="auto">

@@ -144,7 +144,7 @@
     /* Source-demo filmstrip -> warped target */
     .warp-stage {
       display: grid;
-      grid-template-columns: 5fr 3rem 5fr;
+      grid-template-columns: 5fr 5.5rem 5fr;
       gap: 0.5rem 0;
       align-items: center;
       margin-top: 0.5rem;
@@ -193,6 +193,12 @@
       display: block;
     }
     .warp-stage .warp-viewlabel { margin-top: 0.15rem; }
+    .warp-mid {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.15rem; text-align: center;
+    }
+    .warp-ellipsis { font-size: 2.4rem; line-height: 1; color: #555; letter-spacing: 0.08em; }
+    .warp-count { font-size: 0.7rem; font-weight: 700; color: #1F7A1F; white-space: nowrap; line-height: 1.15; }
     @media (max-width: 768px) {
       .warp-stage { grid-template-columns: 1fr; }
       .warp-stage .warp-arrow { transform: rotate(90deg); margin: 0.25rem 0; }
@@ -504,9 +510,10 @@
             source demonstrations from DROID (left; the rainbow curve traces each demo&rsquo;s 3D end-effector
             trajectory, yellow marks the gripper) &mdash; different tables, objects, cameras, and backgrounds.
             All of their trajectories are <b>warped</b> into the target scene via semantic correspondences
-            (right; one warped candidate shown from two camera views). At run time, RAGu <b>retrieves</b> the
-            warped candidate best aligned with the VLA&rsquo;s current intent and uses it to <b>steer</b> the
-            frozen &pi;<sub>0.5</sub> policy in the real world (bottom).
+            (right; six warped candidates shown from two camera views, all sharing the same bowl and pot
+            keypoints, with the retrieved candidate drawn thicker and tracked by the gripper). At run time, RAGu
+            <b>retrieves</b> the warped candidate best aligned with the VLA&rsquo;s current intent and uses it to
+            <b>steer</b> the frozen &pi;<sub>0.5</sub> policy in the real world (bottom).
           </p>
         </div>
 
@@ -563,18 +570,22 @@
               </div>
             </div>
 
-            <div class="warp-arrow">&rarr;</div>
+            <div class="warp-mid">
+              <div class="warp-ellipsis">&#8943;</div>
+              <div class="warp-count">~100 demos<br>warped</div>
+              <div class="warp-arrow">&rarr;</div>
+            </div>
 
             <div class="warped-stack">
               <div>
                 <video autoplay muted loop playsinline preload="auto">
-                  <source src="./static/videos/method/warped_trajectory_cam1.mp4" type="video/mp4">
+                  <source src="./static/videos/method/warped_multitraj_cam1.mp4" type="video/mp4">
                 </video>
                 <div class="warp-viewlabel">Camera view 1</div>
               </div>
               <div>
                 <video autoplay muted loop playsinline preload="auto">
-                  <source src="./static/videos/method/warped_trajectory_cam2.mp4" type="video/mp4">
+                  <source src="./static/videos/method/warped_multitraj_cam2.mp4" type="video/mp4">
                 </video>
                 <div class="warp-viewlabel">Camera view 2</div>
               </div>
@@ -585,7 +596,8 @@
             <span style="color:#1F7A1F;font-weight:700;">reference trajectory</span> anchors DTW pruning:
             <span style="color:#1F7A1F;font-weight:700;">selected</span> candidates are retained in the top-<i>K</i>
             pool and warped into the target scene (right), while
-            <span style="color:#b22222;font-weight:700;">discarded</span> ones are pruned.
+            <span style="color:#b22222;font-weight:700;">discarded</span> ones are pruned. The warped
+            candidates on the right are drawn from the full ~100-demo pool, not only the six tiles shown.
           </p>
 
           <div class="warp-down">&darr;</div>

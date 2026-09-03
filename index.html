@@ -133,7 +133,7 @@
       margin: 0.75rem 0 0.5rem 0;
       user-select: none;
     }
-    .warp-run video { width: 100%; border-radius: 8px; background: #000; display: block; }
+    .warp-run video, .mw-grid video { width: 100%; border-radius: 8px; background: #000; display: block; }
     .warp-note { font-size: 0.85rem; color: #666; margin-top: 0.75rem; text-align: center; }
     @media (max-width: 768px) {
       .warp-grid { grid-template-columns: 1fr; }
@@ -626,15 +626,6 @@
 
         <h3 class="title is-4" style="margin-top:1.5rem;">Real &rarr; Sim: DROID demonstrations guide simulated robots</h3>
         <figure class="paper-figure">
-          <img src="./static/images/droid2sim_warping.jpg" alt="Real-to-sim cross-embodiment warping.">
-          <p class="figure-caption">
-            <span class="figtag">Real-to-Sim cross-embodiment warping.</span>
-            Real-world DROID demonstrations provide structural priors in simulated environments &mdash; from the
-            7-DoF Franka in RoboLab (left) to the 29-DoF Fourier GR-1 humanoid with dexterous hands in RoboCasa
-            (right). The background streams show the distribution of candidates retrieved via coarse DTW filtering.
-          </p>
-        </figure>
-        <figure class="paper-figure">
           <img src="./static/images/robolab_all.jpg" alt="DROID source demos warped into nine RoboLab tasks.">
           <p class="figure-caption">
             <span class="figtag">RoboLab environment overview.</span>
@@ -671,6 +662,34 @@
             layouts, exploiting free simulation data for robust real-world adaptation.
           </p>
         </figure>
+
+        <div class="warp-pipeline" style="margin-top:1rem;">
+          <div class="warp-head" style="margin-bottom:0.6rem;">
+            <span class="warp-badge">MetaWorld</span> Source demo trajectory
+            <span style="color:#777;font-weight:400;">(Sawyer, simulation)</span>
+          </div>
+          <div class="mw-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+            <div>
+              <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/metaworld/metaworld_trajectory_varied_camera_1.mp4" type="video/mp4"></video>
+              <div class="warp-viewlabel">Camera view 1</div>
+            </div>
+            <div>
+              <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/metaworld/metaworld_trajectory_varied_camera_2.mp4" type="video/mp4"></video>
+              <div class="warp-viewlabel">Camera view 2</div>
+            </div>
+          </div>
+          <div class="warp-down">&darr;</div>
+          <div class="warp-head" style="margin-bottom:0.6rem;">
+            <span class="warp-badge is-run">Real world</span> Guided rollout &mdash; <i>Put Banana on Plate</i> (success)
+          </div>
+          <div class="warp-run">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/metaworld/real_banana_on_plate.mp4" type="video/mp4"></video>
+          </div>
+          <p class="warp-note">
+            A simulated Sawyer demonstration from MetaWorld is warped into the real DROID scene and steers the
+            frozen &pi;<sub>0.5</sub> policy to a successful real-world execution.
+          </p>
+        </div>
 
         <h3 class="title is-4" style="margin-top:2rem;">Cross-morphology: a 7-DoF arm guides a 29-DoF humanoid</h3>
         <figure class="paper-figure">

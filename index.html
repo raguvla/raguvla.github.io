@@ -198,6 +198,22 @@
       .warp-stage .warp-arrow { transform: rotate(90deg); margin: 0.25rem 0; }
     }
 
+    /* Simulation rollout rows */
+    .sim-row { margin-bottom: 0.4rem; }
+    .sim-row video {
+      width: 100%;
+      border-radius: 6px;
+      background: #000;
+      display: block;
+    }
+    .sim-row .sim-label {
+      font-size: 0.8rem;
+      color: #555;
+      text-align: center;
+      margin: 0.25rem 0 0.75rem 0;
+      font-weight: 600;
+    }
+
     /* Simulation rollout grids */
     .sim-grid {
       display: grid;
@@ -629,22 +645,18 @@
           </p>
         </figure>
         <h4 class="title is-5" style="margin-top:1.5rem;">Successful RoboLab rollouts (&pi;<sub>0.5</sub> + RAGu)</h4>
-        <div class="sim-grid">
-          <div class="sim-cell">
+        <div style="margin-top:1rem;">
+          <div class="sim-row">
             <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_banana_in_bowl.mp4" type="video/mp4"></video>
             <div class="sim-label">Banana in Bowl</div>
           </div>
-          <div class="sim-cell">
+          <div class="sim-row">
             <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_mouse_on_keyboard.mp4" type="video/mp4"></video>
             <div class="sim-label">Mouse on Keyboard</div>
           </div>
-          <div class="sim-cell">
-            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_mustard_above_raisin.mp4" type="video/mp4"></video>
-            <div class="sim-label">Mustard above Raisin</div>
-          </div>
         </div>
         <p class="figure-caption has-text-centered" style="margin-bottom:1.5rem;">
-          Successful guided rollouts on RoboLab tasks. The cyan curve overlaid on each frame is the
+          Successful guided rollouts on RoboLab tasks, shown from all three camera views. The cyan curve overlaid on each frame is the
           retrieved warped DROID trajectory steering the frozen &pi;<sub>0.5</sub> policy. Longer episodes are
           sped up for brevity.
         </p>
@@ -672,18 +684,18 @@
         </figure>
 
         <h4 class="title is-5" style="margin-top:1.5rem;">Successful GR-1 humanoid rollouts (GR00T-N1.5 + RAGu, zero-shot)</h4>
-        <div class="sim-grid">
-          <div class="sim-cell">
+        <div style="margin-top:1rem;">
+          <div class="sim-row">
             <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/gr1_cuttingboard_to_pot.mp4" type="video/mp4"></video>
-            <div class="sim-label">Cuttingboard to Pot</div>
+            <div class="sim-label">Cuttingboard to Pot &mdash; ego-centric view (left), third-person view (right)</div>
           </div>
-          <div class="sim-cell">
+          <div class="sim-row">
             <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/gr1_placemat_to_plate.mp4" type="video/mp4"></video>
-            <div class="sim-label">Placemat to Plate</div>
+            <div class="sim-label">Placemat to Plate &mdash; ego-centric view (left), third-person view (right)</div>
           </div>
-          <div class="sim-cell">
+          <div class="sim-row">
             <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/gr1_plate_to_bowl.mp4" type="video/mp4"></video>
-            <div class="sim-label">Plate to Bowl</div>
+            <div class="sim-label">Plate to Bowl &mdash; ego-centric view (left), third-person view (right)</div>
           </div>
         </div>
         <p class="figure-caption has-text-centered">

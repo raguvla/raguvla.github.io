@@ -185,13 +185,36 @@
     .src-tile.is-discarded .src-tag {
       background: rgba(178, 34, 34, 0.92);
     }
-    .warped-stack { display: flex; flex-direction: column; gap: 0.6rem; }
-    .warped-stack video {
+    .warped-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      align-items: start;
+    }
+    .warped-grid .warp-viewlabel { margin: 0 0 -0.2rem 0; }
+    .warped-tile { position: relative; }
+    .warped-tile video {
       width: 100%;
-      border-radius: 8px;
+      border-radius: 6px;
       background: #000;
       display: block;
+      outline: 3px solid #1F7A1F;
+      outline-offset: -3px;
     }
+    .warped-tile .src-tag {
+      position: absolute;
+      left: 6px; bottom: 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(31, 122, 31, 0.92);
+      border-radius: 8px;
+      padding: 0 7px;
+      pointer-events: none;
+    }
+    .retrieve-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+    .retrieve-grid video { width: 100%; border-radius: 8px; background: #000; display: block; }
+    @media (max-width: 768px) { .retrieve-grid { grid-template-columns: 1fr; } }
     .warp-stage .warp-viewlabel { margin-top: 0.15rem; }
     .warp-mid {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -510,10 +533,10 @@
             source demonstrations from DROID (left; the rainbow curve traces each demo&rsquo;s 3D end-effector
             trajectory, yellow marks the gripper) &mdash; different tables, objects, cameras, and backgrounds.
             All of their trajectories are <b>warped</b> into the target scene via semantic correspondences
-            (right; six warped candidates shown from two camera views, all sharing the same bowl and pot
-            keypoints, with the retrieved candidate drawn thicker and tracked by the gripper). At run time, RAGu
-            <b>retrieves</b> the warped candidate best aligned with the VLA&rsquo;s current intent and uses it to
-            <b>steer</b> the frozen &pi;<sub>0.5</sub> policy in the real world (bottom).
+            (right; three warped candidates, each shown from two camera views, all sharing the same bowl and
+            pot keypoints). At run time, RAGu <b>retrieves</b> the warped candidate best aligned with the
+            VLA&rsquo;s current intent (middle; the full candidate pool overlaid, retrieved one highlighted) and
+            uses it to <b>steer</b> the frozen &pi;<sub>0.5</sub> policy in the real world (bottom).
           </p>
         </div>
 
@@ -576,18 +599,44 @@
               <div class="warp-arrow">&rarr;</div>
             </div>
 
-            <div class="warped-stack">
-              <div>
+            <div class="warped-grid">
+              <div class="warp-viewlabel">Camera view 1</div>
+              <div class="warp-viewlabel">Camera view 2</div>
+              <div class="warped-tile">
                 <video autoplay muted loop playsinline preload="auto">
-                  <source src="./static/videos/method/warped_multitraj_cam1.mp4" type="video/mp4">
+                  <source src="./static/videos/method/warped_single_1_cam1.mp4" type="video/mp4">
                 </video>
-                <div class="warp-viewlabel">Camera view 1</div>
+                <span class="src-tag">warped candidate 1</span>
               </div>
-              <div>
+              <div class="warped-tile">
                 <video autoplay muted loop playsinline preload="auto">
-                  <source src="./static/videos/method/warped_multitraj_cam2.mp4" type="video/mp4">
+                  <source src="./static/videos/method/warped_single_1_cam2.mp4" type="video/mp4">
                 </video>
-                <div class="warp-viewlabel">Camera view 2</div>
+                <span class="src-tag">warped candidate 1</span>
+              </div>
+              <div class="warped-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_single_2_cam1.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">warped candidate 2</span>
+              </div>
+              <div class="warped-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_single_2_cam2.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">warped candidate 2</span>
+              </div>
+              <div class="warped-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_single_3_cam1.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">warped candidate 3</span>
+              </div>
+              <div class="warped-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_single_3_cam2.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">warped candidate 3</span>
               </div>
             </div>
           </div>
@@ -603,8 +652,31 @@
           <div class="warp-down">&darr;</div>
           <div class="warp-head" style="margin-bottom: 0.6rem;">
             <span class="warp-badge">Step 3</span> Retrieve
-            <span style="color:#777;font-weight:400;">(best policy-aligned candidate)</span>
-            &nbsp;+&nbsp;
+            <span style="color:#777;font-weight:400;">(best policy-aligned candidate from the warped pool)</span>
+          </div>
+          <div class="retrieve-grid">
+            <div>
+              <video autoplay muted loop playsinline preload="auto">
+                <source src="./static/videos/method/warped_multitraj_cam1.mp4" type="video/mp4">
+              </video>
+              <div class="warp-viewlabel">Camera view 1</div>
+            </div>
+            <div>
+              <video autoplay muted loop playsinline preload="auto">
+                <source src="./static/videos/method/warped_multitraj_cam2.mp4" type="video/mp4">
+              </video>
+              <div class="warp-viewlabel">Camera view 2</div>
+            </div>
+          </div>
+          <p class="warp-note">
+            The warped candidates share the same bowl and pot keypoints but differ in approach. At the first
+            denoising step of each inference, RAGu retrieves the candidate whose guidance gradient is smallest
+            &mdash; the one closest to the policy&rsquo;s own intent &mdash; drawn thicker and tracked by the
+            gripper.
+          </p>
+
+          <div class="warp-down">&darr;</div>
+          <div class="warp-head" style="margin-bottom: 0.6rem;">
             <span class="warp-badge is-run">Step 4</span> Steer &mdash; frozen &pi;<sub>0.5</sub> guided rollout
           </div>
           <div class="warp-run">
@@ -613,9 +685,8 @@
             </video>
           </div>
           <p class="warp-note">
-            At the first denoising step of each inference, RAGu retrieves the warped candidate whose guidance
-            gradient is smallest &mdash; the one closest to the policy&rsquo;s own intent &mdash; and steers the
-            denoising toward it. The strip shows the actual robot execution from multiple cameras.
+            The retrieved trajectory defines the guidance energy that steers the denoising process. The strip
+            shows the actual robot execution from multiple cameras.
           </p>
         </div>
       </div>

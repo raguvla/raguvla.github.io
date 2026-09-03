@@ -393,11 +393,21 @@
           <div class="step-card">
             <div class="step-num">1</div>
             <div class="step-body">
-              <h5>Warp &mdash; cross-domain trajectories into the target scene</h5>
+              <h5>Semantic task-category filtering</h5>
               <p>
                 Large unstructured datasets (e.g., DROID) or simulation benchmarks (e.g., Meta-World) are first
                 filtered into a ~100-trajectory pool using semantic keywords for broad task dynamics such as
-                <i>pick-and-place</i>, <i>wiping</i>, or <i>closing</i>. Because cross-domain scenes rarely share
+                <i>pick-and-place</i>, <i>wiping</i>, or <i>closing</i> &mdash; ensuring structural compatibility
+                with the target task before any expensive computation.
+              </p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h5>Warp &mdash; cross-domain trajectories into the target scene</h5>
+              <p>
+                Because cross-domain scenes rarely share
                 object instances, strict in-domain visual matching is replaced with semantic bounding boxes for
                 task-relevant entities (via Grounding DINO), localizing target waypoints in the new scene. Each
                 source trajectory&rsquo;s 3D waypoints are then warped into the target geometry. Crucially, warped
@@ -408,7 +418,7 @@
             </div>
           </div>
           <div class="step-card">
-            <div class="step-num">2</div>
+            <div class="step-num">3</div>
             <div class="step-body">
               <h5>Retrieve &mdash; coarse-to-fine, policy-aligned</h5>
               <p>
@@ -425,7 +435,7 @@
             </div>
           </div>
           <div class="step-card">
-            <div class="step-num">3</div>
+            <div class="step-num">4</div>
             <div class="step-body">
               <h5>Steer &mdash; test-time guidance of the action denoising</h5>
               <p>

@@ -198,6 +198,30 @@
       .warp-stage .warp-arrow { transform: rotate(90deg); margin: 0.25rem 0; }
     }
 
+    /* Simulation rollout grids */
+    .sim-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin: 1rem 0 0.5rem 0;
+    }
+    .sim-cell video {
+      width: 100%;
+      border-radius: 6px;
+      background: #000;
+      display: block;
+    }
+    .sim-cell .sim-label {
+      font-size: 0.8rem;
+      color: #555;
+      text-align: center;
+      margin-top: 0.25rem;
+      font-weight: 600;
+    }
+    @media (max-width: 768px) {
+      .sim-grid { grid-template-columns: 1fr; }
+    }
+
     /* Key results */
     .result-cards {
       display: grid;
@@ -595,6 +619,51 @@
             each moment.
           </p>
         </figure>
+        <h4 class="title is-5" style="margin-top:1.5rem;">Successful RoboLab rollouts (&pi;<sub>0.5</sub> + RAGu)</h4>
+        <div class="sim-grid">
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_banana_in_bowl.mp4" type="video/mp4"></video>
+            <div class="sim-label">Banana in Bowl</div>
+          </div>
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_mouse_on_keyboard.mp4" type="video/mp4"></video>
+            <div class="sim-label">Mouse on Keyboard</div>
+          </div>
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_mustard_above_raisin.mp4" type="video/mp4"></video>
+            <div class="sim-label">Mustard above Raisin</div>
+          </div>
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_wood_spatula_to_bowl.mp4" type="video/mp4"></video>
+            <div class="sim-label">Wood Spatula to Bowl</div>
+          </div>
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_cube_or_banana.mp4" type="video/mp4"></video>
+            <div class="sim-label">Cube or Banana</div>
+          </div>
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_sauce_bottle_in_crate.mp4" type="video/mp4"></video>
+            <div class="sim-label">Sauce Bottle in Crate</div>
+          </div>
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_take_spoon_out.mp4" type="video/mp4"></video>
+            <div class="sim-label">Take Spoon Out</div>
+          </div>
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_cube_in_bowl.mp4" type="video/mp4"></video>
+            <div class="sim-label">Cube in Bowl</div>
+          </div>
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_toy_in_bin.mp4" type="video/mp4"></video>
+            <div class="sim-label">Toy in Bin</div>
+          </div>
+        </div>
+        <p class="figure-caption has-text-centered" style="margin-bottom:1.5rem;">
+          Successful guided rollouts across the nine RoboLab tasks. The cyan curve overlaid on each frame is the
+          retrieved warped DROID trajectory steering the frozen &pi;<sub>0.5</sub> policy. Longer episodes are
+          shown at up to 3&times; speed.
+        </p>
+
         <figure class="paper-figure">
           <img src="./static/images/droid2sim_warping.jpg" alt="Real-to-sim cross-embodiment warping.">
           <p class="figure-caption">
@@ -625,6 +694,26 @@
             GR-1 humanoid tabletop tasks &mdash; despite entirely different kinematics, grippers, and camera setups.
           </p>
         </figure>
+
+        <h4 class="title is-5" style="margin-top:1.5rem;">Successful GR-1 humanoid rollouts (GR00T-N1.5 + RAGu, zero-shot)</h4>
+        <div class="sim-grid">
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/gr1_cuttingboard_to_pot.mp4" type="video/mp4"></video>
+            <div class="sim-label">Cuttingboard to Pot</div>
+          </div>
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/gr1_placemat_to_plate.mp4" type="video/mp4"></video>
+            <div class="sim-label">Placemat to Plate</div>
+          </div>
+          <div class="sim-cell">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/gr1_plate_to_bowl.mp4" type="video/mp4"></video>
+            <div class="sim-label">Plate to Bowl</div>
+          </div>
+        </div>
+        <p class="figure-caption has-text-centered">
+          Successful zero-shot rollouts on the 29-DoF Fourier GR-1 humanoid in RoboCasa: the frozen GR00T-N1.5
+          policy is guided by K=3 warped Franka demonstrations from DROID. Shown at 3&times; speed.
+        </p>
       </div>
     </div>
   </div>

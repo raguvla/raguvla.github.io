@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="description"
-        content="Zero-Shot VLA Adaptation with Retrieved Guidance">
-  <meta name="keywords" content="VLA, Vision Language Action, Adaptation">
+        content="RAGu: Retrieval-Augmented Guidance — Zero-Shot VLA Adaptation with Retrieved Guidance">
+  <meta name="keywords" content="VLA, Vision Language Action, Retrieval-Augmented Generation, Zero-Shot Adaptation, Robot Manipulation">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Zero-Shot VLA Adaptation with Retrieved Guidance</title>
 
@@ -13,27 +13,233 @@
 
   <link rel="stylesheet" href="./static/css/bulma.min.css">
   <link rel="stylesheet" href="./static/css/index.css">
-  <link rel="icon" href="./static/images/favicon.svg">
+  <link rel="icon" href="./static/images/faviconka.svg">
 
   <style>
-    .section.is-light {
-      background-color: #f5f5f5;
+    .section.is-light { background-color: #f5f5f5; }
+
+    .hero.is-light-hero { background-color: #fff; }
+    .publication-venue { color: #555; font-weight: 600; }
+    .publication-links { margin-top: 1rem; }
+
+    .tagline {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 1.25rem;
+      margin-top: 0.75rem;
+    }
+    .tagline .rag { color: #b22222; font-weight: 700; }
+    .tagline .gu  { color: #1f4e8c; font-weight: 700; }
+    .tagline .green { color: #1F7A1F; font-weight: 700; }
+
+    .figure-caption {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 0.6rem;
+      text-align: justify;
+    }
+    .figure-caption .figtag { font-weight: 700; color: #363636; }
+
+    figure.paper-figure { margin: 1rem 0 2rem 0; }
+    figure.paper-figure img {
+      width: 100%;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    /* Method step cards */
+    .step-list { counter-reset: step; margin-top: 1.5rem; }
+    .step-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.9rem;
+      text-align: left;
+    }
+    .step-num {
+      flex: 0 0 auto;
+      width: 2.1rem; height: 2.1rem;
+      border-radius: 50%;
+      background: #1f4e8c;
+      color: #fff;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Google Sans', sans-serif;
+    }
+    .step-body h5 { margin-bottom: 0.25rem; font-weight: 700; }
+    .step-body p { font-size: 0.95rem; color: #4a4a4a; margin: 0; }
+
+    /* Warping video pipeline */
+    .warp-pipeline {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .warp-grid {
+      display: grid;
+      grid-template-columns: 1fr 3rem 1fr;
+      gap: 0.75rem 0;
+      align-items: center;
+    }
+    .warp-head {
+      text-align: center;
+      font-family: 'Google Sans', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      padding-bottom: 0.25rem;
+    }
+    .warp-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #fff;
+      background: #1f4e8c;
+      border-radius: 10px;
+      padding: 1px 10px;
+      margin-right: 0.4rem;
+      vertical-align: middle;
+    }
+    .warp-badge.is-run { background: #1F7A1F; }
+    .warp-grid video {
+      width: 100%;
+      border-radius: 8px;
+      background: #000;
+      display: block;
+    }
+    .warp-arrow {
+      text-align: center;
+      font-size: 1.6rem;
+      color: #b22222;
+      font-weight: 700;
+      user-select: none;
+    }
+    .warp-viewlabel {
+      font-size: 0.8rem;
+      color: #777;
+      text-align: center;
+      margin-top: 0.2rem;
+    }
+    .warp-down {
+      text-align: center;
+      font-size: 1.8rem;
+      color: #b22222;
+      font-weight: 700;
+      margin: 0.75rem 0 0.5rem 0;
+      user-select: none;
+    }
+    .warp-run video { width: 100%; border-radius: 8px; background: #000; display: block; }
+    .warp-note { font-size: 0.85rem; color: #666; margin-top: 0.75rem; text-align: center; }
+    @media (max-width: 768px) {
+      .warp-grid { grid-template-columns: 1fr; }
+      .warp-arrow { transform: rotate(90deg); margin: 0.25rem 0; }
+      .warp-head.is-right { margin-top: 0.5rem; }
+    }
+
+    /* Key results */
+    .result-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0 2rem 0;
+    }
+    .result-card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 1.1rem 0.9rem;
+      text-align: center;
+    }
+    .result-card .num {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #b22222;
+    }
+    .result-card .lab {
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: 0.3rem;
+      line-height: 1.3;
+    }
+    @media (max-width: 768px) {
+      .result-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Experiments grid */
+    .exp-task-title { margin-top: 2rem; margin-bottom: 0.75rem; }
+    .exp-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .exp-cell { text-align: center; }
+    .exp-cell h4 { font-weight: 600; margin-bottom: 0.4rem; }
+    .exp-cell video { width: 100%; border-radius: 6px; background: #000; }
+    .exp-clip { margin-bottom: 0.6rem; }
+    .exp-label {
+      display: inline-block; font-size: 0.8rem; font-weight: 600;
+      padding: 1px 8px; border-radius: 10px; margin-bottom: 0.25rem;
+    }
+    .exp-success { color: #1a9850; }
+    .exp-fail { color: #d73027; }
+    .exp-na {
+      display: flex; align-items: center; justify-content: center;
+      aspect-ratio: 4/3; background: #f0f0f0; color: #999;
+      border-radius: 6px; font-size: 0.85rem;
+    }
+    @media (max-width: 768px) {
+      .exp-grid { grid-template-columns: 1fr; }
     }
   </style>
-
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
 
+<!-- ======================================================= Hero -->
 <section class="hero">
   <div class="hero-body">
     <div class="container is-max-desktop">
       <div class="columns is-centered">
         <div class="column has-text-centered">
           <h1 class="title is-1 publication-title">Zero-Shot VLA Adaptation<br>with Retrieved Guidance</h1>
+          <div class="is-size-4 publication-title" style="margin-bottom: 0.75rem;">
+            <span style="color:#b22222;font-weight:700;">RAG</span><span style="color:#1f4e8c;font-weight:700;">u</span>:
+            <u>R</u>etrieval-<u>A</u>ugmented <u>Gu</u>idance
+          </div>
           <div class="is-size-5 publication-authors">
-            <span class="author-block">
-              Author Anonymous
+            <span class="author-block">Anonymous Authors</span>
+          </div>
+          <div class="is-size-6 publication-venue" style="margin:0.35rem auto 0;">
+            Under review at CoRL 2026
+          </div>
+
+          <div class="publication-links">
+            <span class="link-block">
+              <a href="#method" class="button is-dark is-rounded is-small">
+                <span>Method</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#results" class="button is-dark is-rounded is-small">
+                <span>Results</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#rollouts" class="button is-dark is-rounded is-small">
+                <span>Robot Rollouts</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="https://huggingface.co/datasets/raguvla/real-world-evaluation"
+                 class="button is-dark is-rounded is-small" target="_blank" rel="noopener">
+                <span>Evaluation Data</span>
+              </a>
             </span>
           </div>
         </div>
@@ -42,94 +248,388 @@
   </div>
 </section>
 
+<!-- ======================================================= Teaser -->
+<section class="hero teaser">
+  <div class="container is-max-widescreen">
+    <div class="hero-body" style="padding-top: 0;">
+      <figure class="paper-figure" style="margin-bottom: 0.5rem;">
+        <img src="./static/images/teaser.jpg"
+             alt="RAGu enables zero-shot adaptation across domains and embodiments.">
+      </figure>
+      <p class="figure-caption has-text-centered" style="max-width: 62rem; margin-left:auto; margin-right:auto;">
+        A single retrieval-augmented guidance mechanism transfers manipulation knowledge across four settings:
+        <b>Real&rarr;Real</b> (DROID demos to novel real-world Franka scenes),
+        <b>Real&rarr;Sim</b> (DROID to RoboLab, and to a 29-DoF GR-1 bimanual humanoid in RoboCasa),
+        and <b>Sim&rarr;Real</b> (Meta-World Sawyer demos to the real-world DROID setup) &mdash;
+        all with the base VLA's weights completely frozen.
+      </p>
+    </div>
+  </div>
+</section>
 
+<!-- ======================================================= Abstract -->
 <section class="section is-light">
   <div class="container is-max-desktop">
-    <!-- Abstract. -->
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            [Abstract content to be added]
+            Pre-training large parametric &ldquo;Vision-Language-Action&rdquo; (VLA) models on large demonstration
+            datasets has recently produced promising results for general-purpose manipulation, yet these models
+            still struggle under even small domain shifts from training data, such as the camera viewpoint, the
+            scene background, the exact object identities, or the robot&rsquo;s precise morphology. What makes this
+            especially frustrating is that any trained roboticist <i>knows</i> appropriate compensation mechanisms
+            for many of these shifts: e.g., correctly accounting for camera-robot calibration to overcome camera
+            viewpoint shift, or attending to the key task-relevant entities to avoid distraction by background shift.
+          </p>
+          <p>
+            We propose <b>Retrieval-Augmented Guidance (RAGu)</b>, which non-parametrically injects this knowledge
+            into a target VLA to robustify it against such domain shifts, <b>without modifying the VLA&rsquo;s
+            weights</b>. To enable near-real-time retrieval-augmentation for VLAs, we design a process that
+            constructs trajectory guidance through a multi-stage <b>coarse-to-fine retrieval</b> operation that
+            iteratively filters the source dataset based first on the target task category, then the target scene,
+            and finally the VLA intent at the current moment in time. Thus only the last, finest stage needs to be
+            performed in the closed control loop during task execution, yielding large computational efficiencies.
+          </p>
+          <p>
+            We show that RAGu&rsquo;s explicit visual knowledge injection helps base VLAs overcome domain shifts
+            while preserving their motor priors. Across five real-world tasks and nine simulated RoboLab tasks,
+            RAGu reaches <b>80%</b> average success in the real world and <b>34.4%</b> average success in
+            simulation, consistently outperforming base VLA policies, inference-time steering baselines, and
+            retrieval-based adaptation methods.
           </p>
         </div>
       </div>
     </div>
-    <!--/ Abstract. -->
   </div>
 </section>
 
-
-<section class="section">
+<!-- ======================================================= Method -->
+<section class="section" id="method">
   <div class="container is-max-desktop">
-    <!-- Method. -->
     <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
+      <div class="column is-full">
         <h2 class="title is-3">Method</h2>
         <div class="content has-text-justified">
           <p>
-            [Method content to be added]
+            Implementing retrieval-augmented generation for robotics must overcome <b>three key problems</b>:
+            <b>(1)&nbsp;Retrieval scalability</b> &mdash; full retrieval from a large database inside the closed
+            control loop is too computationally expensive;
+            <b>(2)&nbsp;Cross-domain generalization</b> &mdash; even the best-matched trajectories in the largest
+            robotics datasets are still domain-shifted in viewpoint, scene geometry, and embodiment; and
+            <b>(3)&nbsp;Context-efficient adaptation</b> &mdash; VLAs are often too small to concatenate retrieved
+            examples into their input context. RAGu addresses all three with a coarse-to-fine
+            <b>retrieve&nbsp;&rarr;&nbsp;warp&nbsp;&rarr;&nbsp;steer</b> pipeline that turns cross-domain
+            demonstrations into an inference-time guidance field for a frozen flow-matching VLA.
+          </p>
+        </div>
+
+        <figure class="paper-figure">
+          <img src="./static/images/figure1.jpg" alt="Overview of the RAGu pipeline.">
+          <p class="figure-caption">
+            <span class="figtag">Overview of the RAGu pipeline.</span>
+            <b>Step 1.</b> Cross-domain source trajectories, after task-category filtering, are warped into the
+            novel target domain to bridge spatial gaps via dense semantic correspondences established with object
+            bounding boxes from Grounding DINO.
+            <b>Step 2.</b> RAGu retrieves the optimal prior-aligned trajectory <i>i*</i> from the top-<i>K</i>
+            candidates by minimizing the guidance gradient norm, ensuring natural alignment with the VLA&rsquo;s
+            generative prior. The selected trajectory acts as an energy guidance field
+            <i>L<sub>warp</sub></i> that dynamically steers the VLA&rsquo;s flow-matching denoising process
+            <i>v<sub>guided</sub></i> at test time, achieving zero-shot out-of-distribution adaptation.
+          </p>
+        </figure>
+
+        <div class="step-list">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h5>Preliminary retrieval &mdash; semantic task-category filtering</h5>
+              <p>
+                Large unstructured datasets (e.g., DROID) or simulation benchmarks (e.g., Meta-World) are first
+                filtered into a ~100-trajectory pool using semantic keywords for broad task dynamics such as
+                <i>pick-and-place</i>, <i>wiping</i>, or <i>closing</i> &mdash; ensuring structural compatibility
+                with the target task before any expensive computation.
+              </p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h5>Cross-domain trajectory warping</h5>
+              <p>
+                Cross-domain scenes rarely share object instances, so strict in-domain visual matching is replaced
+                with semantic bounding boxes for task-relevant entities (via Grounding DINO), localizing target
+                waypoints in the new scene. Each source trajectory&rsquo;s 3D waypoints are then warped into the
+                target geometry. Crucially, warped paths are used only as <b>spatial priors</b> &mdash; the
+                VLA&rsquo;s innate generalization manages the closed-loop manipulation, avoiding the unreliability
+                of directly executing warped paths with inverse kinematics.
+              </p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h5>Primary retrieval &mdash; coarse static filtering via DTW</h5>
+              <p>
+                For each task-dynamics group, a reference trajectory that is geometrically relevant and compatible
+                with the VLA prior anchors a Dynamic Time Warping (DTW) pruning step, keeping only the
+                top-<i>K</i> warped candidates (e.g., K=8 for real-robot, K=16 for RoboLab, K=3 for the humanoid).
+              </p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <h5>Secondary retrieval &mdash; fine-grained inference-time policy alignment</h5>
+              <p>
+                In the control loop, the VLA&rsquo;s predicted action chunk is mapped to a Cartesian end-effector
+                path via forward kinematics. Among the K candidates, RAGu selects the trajectory whose tracking-cost
+                <b>gradient has the smallest norm</b> &mdash; i.e., the candidate requiring the least change to the
+                VLA&rsquo;s current dynamics, hence closest to the policy&rsquo;s own intent. This is the only
+                retrieval stage that runs in the loop, and it happens once per inference, at the first denoising step.
+              </p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">5</div>
+            <div class="step-body">
+              <h5>Test-time steering with action denoising</h5>
+              <p>
+                The selected warped trajectory instantiates an energy function whose gradient is subtracted from the
+                flow-matching velocity field (<i>v<sub>guided</sub> = v &minus; &gamma;&nabla;L<sub>warp</sub></i>),
+                steering action generation toward the retrieved trajectory while the VLA&rsquo;s weights stay frozen
+                and its motor priors stay intact.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================== Warping showcase -->
+        <h3 class="title is-4" style="margin-top: 3rem;">Retrieve &rarr; Warp &rarr; Steer, in action</h3>
+        <div class="content has-text-justified">
+          <p>
+            The clips below trace a single retrieved demonstration through the full RAGu pipeline on the real robot.
+            A cross-domain source demonstration is retrieved from DROID (left; overlaid line shows its 3D
+            end-effector trajectory, yellow markers its waypoints). Its trajectory is then <b>warped</b> into the
+            target scene via semantic correspondences (right) &mdash; note the completely different table, objects,
+            and background. Finally, the warped trajectory steers the frozen &pi;<sub>0.5</sub> policy to execute
+            the task in the real world (bottom).
+          </p>
+        </div>
+
+        <div class="warp-pipeline">
+          <div class="warp-grid">
+            <div class="warp-head">
+              <span class="warp-badge">Step 1</span> Retrieved source demo <span style="color:#777;font-weight:400;">(cross-domain, DROID)</span>
+            </div>
+            <div></div>
+            <div class="warp-head is-right">
+              <span class="warp-badge">Step 2</span> Trajectory warped into target scene
+            </div>
+
+            <div>
+              <video autoplay muted loop playsinline preload="auto">
+                <source src="./static/videos/method/demo_trajectory_cam1.mp4" type="video/mp4">
+              </video>
+              <div class="warp-viewlabel">Camera view 1</div>
+            </div>
+            <div class="warp-arrow">&rarr;</div>
+            <div>
+              <video autoplay muted loop playsinline preload="auto">
+                <source src="./static/videos/method/warped_trajectory_cam1.mp4" type="video/mp4">
+              </video>
+              <div class="warp-viewlabel">Camera view 1</div>
+            </div>
+
+            <div>
+              <video autoplay muted loop playsinline preload="auto">
+                <source src="./static/videos/method/demo_trajectory_cam2.mp4" type="video/mp4">
+              </video>
+              <div class="warp-viewlabel">Camera view 2</div>
+            </div>
+            <div class="warp-arrow">&rarr;</div>
+            <div>
+              <video autoplay muted loop playsinline preload="auto">
+                <source src="./static/videos/method/warped_trajectory_cam2.mp4" type="video/mp4">
+              </video>
+              <div class="warp-viewlabel">Camera view 2</div>
+            </div>
+          </div>
+
+          <div class="warp-down">&darr;</div>
+          <div class="warp-head" style="margin-bottom: 0.6rem;">
+            <span class="warp-badge is-run">Step 3</span> Guided rollout &mdash; frozen &pi;<sub>0.5</sub> steered by the warped trajectory
+          </div>
+          <div class="warp-run">
+            <video autoplay muted loop playsinline preload="auto">
+              <source src="./static/videos/method/real_run.mp4" type="video/mp4">
+            </video>
+          </div>
+          <p class="warp-note">
+            The blue&ndash;cyan curve is the 3D end-effector trajectory; yellow overlays mark waypoints and detected
+            task-relevant entities. The bottom strip shows the actual robot execution from multiple cameras.
           </p>
         </div>
       </div>
     </div>
-    <!--/ Method. -->
   </div>
 </section>
 
-
-<section class="section is-light">
+<!-- ======================================================= Cross-domain transfer -->
+<section class="section is-light" id="transfer">
   <div class="container is-max-desktop">
-    <!-- Experiments. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">One Mechanism, Four Transfer Settings</h2>
+        <div class="content has-text-justified">
+          <p>
+            Because warped 3D trajectories abstract away appearance, viewpoint, and embodiment, the same
+            retrieval-augmented guidance transfers across radically different source&ndash;target pairs.
+          </p>
+        </div>
+
+        <h3 class="title is-4" style="margin-top:1.5rem;">Real &rarr; Sim: DROID demonstrations guide simulated robots</h3>
+        <figure class="paper-figure">
+          <img src="./static/images/robolab_all.jpg" alt="DROID source demos warped into nine RoboLab tasks.">
+          <p class="figure-caption">
+            <span class="figtag">RoboLab environment overview.</span>
+            100 real-world source trajectories are queried from DROID (left) and warped into nine simulated RoboLab
+            tasks. The transparent streams visualize the spatial diversity of the warped candidate trajectories;
+            RAGu&rsquo;s in-the-loop retrieval picks whichever candidate best matches the policy&rsquo;s intent at
+            each moment.
+          </p>
+        </figure>
+        <figure class="paper-figure">
+          <img src="./static/images/droid2sim_warping.jpg" alt="Real-to-sim cross-embodiment warping.">
+          <p class="figure-caption">
+            <span class="figtag">Real-to-Sim cross-embodiment warping.</span>
+            Real-world DROID demonstrations provide structural priors in simulated environments &mdash; from the
+            7-DoF Franka in RoboLab (left) to the 29-DoF Fourier GR-1 humanoid with dexterous hands in RoboCasa
+            (right). The background streams show the distribution of candidates retrieved via coarse DTW filtering.
+          </p>
+        </figure>
+
+        <h3 class="title is-4" style="margin-top:2rem;">Sim &rarr; Real: Meta-World demonstrations guide a real Franka</h3>
+        <figure class="paper-figure">
+          <img src="./static/images/metaworld_droid.jpg" alt="Cross-embodiment warping from Meta-World Sawyer to real-world DROID.">
+          <p class="figure-caption">
+            <span class="figtag">Cross-embodiment sim-to-real warping.</span>
+            100 simulated expert trajectories from a Meta-World Sawyer robot (<i>bin-picking-v3</i>) are warped into
+            the physical DROID setup for the multi-stage <i>Banana-to-Plate</i> task across three origin&ndash;destination
+            layouts, exploiting free simulation data for robust real-world adaptation.
+          </p>
+        </figure>
+
+        <h3 class="title is-4" style="margin-top:2rem;">Cross-morphology: a 7-DoF arm guides a 29-DoF humanoid</h3>
+        <figure class="paper-figure">
+          <img src="./static/images/humanoid_overview.jpg" alt="Franka DROID demonstrations guiding the Fourier GR-1 humanoid.">
+          <p class="figure-caption">
+            <span class="figtag">Franka &rarr; humanoid guidance.</span>
+            End-effector trajectories from the Franka-based DROID dataset guide GR00T-N1.5 policies on the Fourier
+            GR-1 humanoid tabletop tasks &mdash; despite entirely different kinematics, grippers, and camera setups.
+          </p>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= Results -->
+<section class="section" id="results">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">Results</h2>
+
+        <div class="result-cards">
+          <div class="result-card">
+            <div class="num">80%</div>
+            <div class="lab">avg. real-world success (5 tasks)<br>vs. 40% Steering+VLM, 20% &pi;<sub>0.5</sub></div>
+          </div>
+          <div class="result-card">
+            <div class="num">25%</div>
+            <div class="lab">RoboLab avg. with 100 DROID demos<br>vs. 1% RiCL with the same demos</div>
+          </div>
+          <div class="result-card">
+            <div class="num">+11.6</div>
+            <div class="lab">points over &pi;<sub>0.5</sub> on 9 RoboLab tasks<br>by scaling retrieval to 100 trajectories</div>
+          </div>
+          <div class="result-card">
+            <div class="num">+13.6</div>
+            <div class="lab">points on the GR-1 humanoid<br>(GR00T-N1.5: 33.6 &rarr; 47.2, zero-shot)</div>
+          </div>
+        </div>
+
+        <h3 class="title is-4">Real-world evaluation</h3>
+        <figure class="paper-figure">
+          <img src="./static/images/real_robot_barplot.png" alt="Real-world success rates across five tasks.">
+          <p class="figure-caption">
+            <span class="figtag">Real-world success rates (10 rollouts per task).</span>
+            RAGu doubles the inference-time steering baseline (Steering + VLM) and quadruples the base
+            &pi;<sub>0.5</sub> policy on average, reaching 100% on <i>Wipe Table</i> and 90% on
+            <i>Open Drawer</i> and <i>Close Microwave</i>. The retrieval-augmented fine-tuning baseline RiCL
+            fails to complete any task in this setting.
+          </p>
+        </figure>
+
+        <h3 class="title is-4" style="margin-top:2rem;">Simulation evaluation (RoboLab)</h3>
+        <figure class="paper-figure">
+          <img src="./static/images/robolab_barplot.png" alt="RoboLab success rates comparing GROOT, pi0.5, RiCL, and Ours.">
+          <p class="figure-caption">
+            <span class="figtag">RoboLab evaluation (25 rollouts per task).</span>
+            With an identical pool of 100 warped DROID demonstrations, RAGu (25% avg.) substantially outperforms
+            RiCL (1%), base &pi;<sub>0.5</sub> (5%), and GROOT (1%) &mdash; evidence that trajectory-aligned,
+            prior-aware steering is a more context-efficient adaptation mechanism than concatenating demonstrations
+            into the context or updating the VLA&rsquo;s weights.
+          </p>
+        </figure>
+
+        <div class="content has-text-justified" style="margin-top:1.5rem;">
+          <h3 class="title is-4">Key findings</h3>
+          <ul>
+            <li><b>Scaling retrieval helps.</b> On nine RoboLab tasks, mean success grows from 22.8%
+              (&pi;<sub>0.5</sub>) to 34.4% with 100 warped demos &mdash; large gains on tasks needing precise
+              object-relative positioning (<i>BananaInBowl</i> +32, <i>RubiksCubeOrBanana</i> +24). Broad trajectory
+              coverage acts as a dense structural prior rather than a template to copy.</li>
+            <li><b>Sim-to-real transfer survives multi-stage tasks.</b> In the <i>Banana-to-Plate</i> task,
+              &pi;<sub>0.5</sub> and Steering+VLM degrade sharply by the final stage, while RAGu guided by warped
+              Meta-World trajectories maintains 60&ndash;70% final-stage completion across all three layouts.</li>
+            <li><b>Cross-morphology guidance works.</b> Warped DROID (Franka) demos improve GR00T-N1.5 on the
+              29-DoF Fourier GR-1 humanoid from 33.6 to 47.2 average success without fine-tuning, and from 36.8 to
+              48.8 with fine-tuning.</li>
+            <li><b>Guided trajectories are also more efficient.</b> With 100 demos, RAGu produces the smoothest
+              motions (best EE-SPARC) and the shortest average end-effector paths (5.25&nbsp;m vs. 5.93&nbsp;m for
+              &pi;<sub>0.5</sub>) at comparable speed &mdash; the gains come from more direct motion, not from
+              moving faster.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= Rollout videos -->
+<section class="section is-light" id="rollouts">
+  <div class="container is-max-desktop">
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
-        <h2 class="title is-3">Experiments</h2>
+        <h2 class="title is-3">Real-Robot Rollouts</h2>
         <div class="content has-text-justified">
           <p>
             Real-robot rollouts across five manipulation tasks.
-            Real-robot rollouts across five manipulation tasks. 
-            All of the 200 episode (4 baselines, 5 tasks, 10 episodes) 
-            and action history of real-world experiment is uploaded in the 
-            referred <a href="https://huggingface.co/datasets/raguvla/real-world-evaluation">LINK</a> 
-            -except for 1 success episode of Steering + VLM baseline 
-            for Towel on Plate task due to neglect in saving the video.
+            All 200 episodes (4 methods, 5 tasks, 10 episodes each) with action histories are uploaded to the
+            referenced <a href="https://huggingface.co/datasets/raguvla/real-world-evaluation" target="_blank" rel="noopener">dataset</a>
+            &mdash; except one success episode of the Steering + VLM baseline
+            on the Towel on Plate task, whose video was accidentally not saved.
             For each task we show
             representative <span style="color:#1a9850;font-weight:600;">success</span> and
             <span style="color:#d73027;font-weight:600;">failure</span> episodes for our method
-            (<b>Ours</b>) and two baselines (<b>Steering VLM</b>, <b>RiCL</b>).
+            (<b>Ours</b>) and two baselines (<b>Steering + VLM</b>, <b>RiCL</b>).
           </p>
         </div>
       </div>
     </div>
-
-    <style>
-      .exp-task-title { margin-top: 2rem; margin-bottom: 0.75rem; }
-      .exp-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-      }
-      .exp-cell { text-align: center; }
-      .exp-cell h4 { font-weight: 600; margin-bottom: 0.4rem; }
-      .exp-cell video { width: 100%; border-radius: 6px; background: #000; }
-      .exp-clip { margin-bottom: 0.6rem; }
-      .exp-label {
-        display: inline-block; font-size: 0.8rem; font-weight: 600;
-        padding: 1px 8px; border-radius: 10px; margin-bottom: 0.25rem;
-      }
-      .exp-success { color: #1a9850; }
-      .exp-fail { color: #d73027; }
-      .exp-na {
-        display: flex; align-items: center; justify-content: center;
-        aspect-ratio: 4/3; background: #f0f0f0; color: #999;
-        border-radius: 6px; font-size: 0.85rem;
-      }
-      @media (max-width: 768px) {
-        .exp-grid { grid-template-columns: 1fr; }
-      }
-    </style>
 
     <div class="columns is-centered">
       <div class="column is-full">
@@ -145,7 +645,7 @@
               <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_red_cabinet_ours_fail.mp4" type="video/mp4"></video></div>
           </div>
           <div class="exp-cell">
-            <h4>Steering VLM</h4>
+            <h4>Steering + VLM</h4>
             <div class="exp-clip"><span class="exp-label exp-success">Success</span>
               <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_red_cabinet_steering_vlm_success.mp4" type="video/mp4"></video></div>
             <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
@@ -171,7 +671,7 @@
               <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_upper_drawer_ours_fail.mp4" type="video/mp4"></video></div>
           </div>
           <div class="exp-cell">
-            <h4>Steering VLM</h4>
+            <h4>Steering + VLM</h4>
             <div class="exp-clip"><span class="exp-label exp-success">Success</span>
               <video controls muted loop playsinline preload="metadata"><source src="./static/videos/open_upper_drawer_steering_vlm_success.mp4" type="video/mp4"></video></div>
             <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
@@ -197,7 +697,7 @@
               <video controls muted loop playsinline preload="metadata"><source src="./static/videos/close_microwave_ours_fail.mp4" type="video/mp4"></video></div>
           </div>
           <div class="exp-cell">
-            <h4>Steering VLM</h4>
+            <h4>Steering + VLM</h4>
             <div class="exp-clip"><span class="exp-label exp-success">Success</span>
               <video controls muted loop playsinline preload="metadata"><source src="./static/videos/close_microwave_steering_vlm_success.mp4" type="video/mp4"></video></div>
             <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
@@ -223,7 +723,7 @@
               <video controls muted loop playsinline preload="metadata"><source src="./static/videos/towel_on_plate_ours_fail.mp4" type="video/mp4"></video></div>
           </div>
           <div class="exp-cell">
-            <h4>Steering VLM</h4>
+            <h4>Steering + VLM</h4>
             <div class="exp-clip"><span class="exp-label exp-success">Success</span>
               <video controls muted loop playsinline preload="metadata"><source src="./static/videos/towel_on_plate_steering_vlm_success.mp4" type="video/mp4"></video></div>
             <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
@@ -249,7 +749,7 @@
               <div class="exp-na">N/A</div></div>
           </div>
           <div class="exp-cell">
-            <h4>Steering VLM</h4>
+            <h4>Steering + VLM</h4>
             <div class="exp-clip"><span class="exp-label exp-success">Success</span>
               <video controls muted loop playsinline preload="metadata"><source src="./static/videos/wipe_table_steering_vlm_success.mp4" type="video/mp4"></video></div>
             <div class="exp-clip"><span class="exp-label exp-fail">Failure</span>
@@ -266,16 +766,39 @@
 
       </div>
     </div>
-    <!--/ Experiments. -->
   </div>
 </section>
 
+<!-- ======================================================= Conclusion -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Conclusion</h2>
+        <div class="content has-text-justified">
+          <p>
+            RAGu is a zero-shot, training-free framework that adapts pretrained VLAs to out-of-distribution
+            environments by semantically warping cross-domain trajectories into the target geometric space and
+            using them as energy fields that guide the flow-matching denoising process. It bridges embodiment and
+            sim-to-real gaps &mdash; enabling a Franka manipulator to execute complex multi-stage tasks from
+            simulated Sawyer demonstrations &mdash; and scaling the retrieval pool to 100 trajectories
+            significantly improves robustness. <b>Limitations:</b> RAGu relies on visual semantic correspondences
+            and is therefore sensitive to camera placement and occlusion; severe occlusions, including
+            self-occlusion by the robot, can degrade 3D warping and inject noise into the guidance. Future work
+            will incorporate more robust multi-view 3D representations. Overall, RAGu offers a scalable and
+            computationally efficient path to deploy foundation robot models in the wild without costly fine-tuning.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <footer class="footer">
   <div class="container">
     <div class="content has-text-centered">
       <p>
-        Zero-Shot VLA Adaptation with Retrieved Guidance
+        <b>Zero-Shot VLA Adaptation with Retrieved Guidance</b> &mdash; Anonymous Authors, under review at CoRL 2026.
       </p>
       <p>
         Website adapted from the <a href="https://nerfies.github.io">Nerfies project page</a> template.

@@ -326,6 +326,7 @@
     table.paper-table td.dn { color: #d73027; }
     table.paper-table td.dz { color: #999; }
     table.paper-table td.best { font-weight: 700; }
+    table.paper-table th.grp, table.paper-table td.grp { border-right: 1px solid #bbb; }
     table.paper-table tr.mean td {
       font-weight: 700;
       border-top: 1px solid #bbb;
@@ -949,6 +950,42 @@
             largest gains appear on tasks requiring precise spatial alignment (<i>BananaInBowl</i> +32,
             <i>RubiksCubeOrBanana</i> +24). Performance is not strictly monotonic at intermediate pool sizes, but the
             100-demo setting is the most robust overall.
+          </p>
+        </figure>
+
+        <h3 class="title is-4" style="margin-top:2rem;">Cross-morphology evaluation (GR-1 humanoid, RoboCasa)</h3>
+        <figure class="paper-figure">
+          <div class="table-scroll">
+            <table class="paper-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" class="task">Task</th>
+                  <th colspan="5" class="grp">GR00T-N1.5 (w/o FT)</th>
+                  <th colspan="5">GR00T-N1.5 (w/ FT)</th>
+                </tr>
+                <tr>
+                  <th>Base</th><th>Ours (1 traj)</th><th>&Delta;</th><th>Ours (100 traj)</th><th class="grp">&Delta;</th>
+                  <th>Base</th><th>Ours (1 traj)</th><th>&Delta;</th><th>Ours (100 traj)</th><th>&Delta;</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr><td class="task">CuttingboardToPot</td><td class="base">4</td><td>12</td><td class="grp dp">+8</td><td>12</td><td class="dp">+8</td><td class="base">4</td><td>8</td><td class="dp">+4</td><td>8</td><td class="dp">+4</td></tr>
+              <tr><td class="task">PlacematToPlate</td><td class="base">48</td><td>60</td><td class="dp">+12</td><td>72</td><td class="grp dp">+24</td><td class="base">48</td><td>72</td><td class="dp">+24</td><td>72</td><td class="dp">+24</td></tr>
+              <tr><td class="task">PlateToBowl</td><td class="base">44</td><td>44</td><td class="dz">+0</td><td>56</td><td class="grp dp">+12</td><td class="base">68</td><td>72</td><td class="dp">+4</td><td>80</td><td class="dp">+12</td></tr>
+              <tr><td class="task">PlateToPlate</td><td class="base">56</td><td>44</td><td class="dn">&minus;12</td><td>60</td><td class="grp dp">+4</td><td class="base">20</td><td>40</td><td class="dp">+20</td><td>36</td><td class="dp">+16</td></tr>
+              <tr><td class="task">TrayToPlate</td><td class="base">16</td><td>36</td><td class="grp dp">+20</td><td>36</td><td class="dp">+20</td><td class="base">44</td><td>40</td><td class="dn">&minus;4</td><td>48</td><td class="dp">+4</td></tr>
+              <tr class="mean"><td class="task">Average</td><td class="base">33.6</td><td>39.2</td><td class="dp">+5.6</td><td>47.2</td><td class="grp dp">+13.6</td><td class="base">36.8</td><td>46.4</td><td class="dp">+9.6</td><td>48.8</td><td class="dp">+12</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="figure-caption">
+            <span class="figtag">Cross-embodiment humanoid manipulation with in-context trajectory guidance.</span>
+            Success rates (%, 25 rollouts per task) on five RoboCasa tabletop tasks for the 29-DoF Fourier GR-1
+            humanoid, using the base GR00T-N1.5 model and NVIDIA&rsquo;s task-specific fine-tuned variant, each guided
+            by 1 or 100 DROID (Franka) demonstrations warped into the humanoid&rsquo;s workspace. The &Delta; columns
+            indicate absolute improvement over the corresponding unguided baseline. Retrieval guidance improves both
+            checkpoints, from 33.6 to 47.2 average success without fine-tuning and from 36.8 to 48.8 with fine-tuning,
+            so base-model robustness raises the ceiling while remaining complementary to retrieval-based guidance.
           </p>
         </figure>
 

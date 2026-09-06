@@ -1049,6 +1049,20 @@
               moving faster.</li>
           </ul>
         </div>
+
+        <h3 class="title is-4" style="margin-top:2rem;">Systematic generalization on the real robot (STAR-Gen)</h3>
+        <figure class="paper-figure">
+          <img src="./static/images/stargen_table.png" alt="Per-trial task progress of RAGu and baselines across STAR-Gen generalization axes on the real Franka.">
+          <p class="figure-caption">
+            <span class="figtag">Per-trial task progress across STAR-Gen perturbations.</span>
+            Columns are the STAR-Gen generalization axes (original task, visual distractors, a new object, shifted
+            object poses, and rephrased action verbs); rows are pick-and-place and articulated-object tasks on the real
+            Franka. Above each initial scene, a bar runs from white (0) to black (100% task progress) and a triangle
+            marks the progress each method reached on that trial: Ours (red), &pi;<sub>0.5</sub> (blue), Steering + VLM
+            (teal), and RiCL (gray). RAGu stays near the high end on every axis, while the baselines mostly stall after
+            approaching or grasping the object.
+          </p>
+        </figure>
       </div>
     </div>
   </div>

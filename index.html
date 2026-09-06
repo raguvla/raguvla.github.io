@@ -297,6 +297,42 @@
       .result-cards { grid-template-columns: repeat(2, 1fr); }
     }
 
+    /* Paper-style results table */
+    .table-scroll { overflow-x: auto; margin-top: 1rem; width: 100%; }
+    #results .column { min-width: 0; }
+    table.paper-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 720px;
+      font-size: 0.82rem;
+      color: #363636;
+    }
+    table.paper-table th, table.paper-table td {
+      padding: 0.3rem 0.45rem;
+      text-align: center;
+      white-space: nowrap;
+      border-bottom: 1px solid #ececec;
+    }
+    table.paper-table thead th {
+      font-weight: 700;
+      border-bottom: 1px solid #bbb;
+      background: #fafafa;
+    }
+    table.paper-table thead tr:first-child th { border-top: 2px solid #363636; }
+    table.paper-table th.task, table.paper-table td.task { text-align: left; }
+    table.paper-table td.task { font-family: monospace; font-size: 0.8rem; }
+    table.paper-table td.base { color: #777; }
+    table.paper-table td.dp { color: #1a9850; }
+    table.paper-table td.dn { color: #d73027; }
+    table.paper-table td.dz { color: #999; }
+    table.paper-table td.best { font-weight: 700; }
+    table.paper-table tr.mean td {
+      font-weight: 700;
+      border-top: 1px solid #bbb;
+      border-bottom: 2px solid #363636;
+      background: #fafafa;
+    }
+
     /* Experiments grid */
     .exp-task-title { margin-top: 2rem; margin-bottom: 0.75rem; }
     .exp-grid {
@@ -421,7 +457,7 @@
           <p>
             We show that RAGu&rsquo;s explicit visual knowledge injection helps base VLAs overcome domain shifts
             while preserving their motor priors. Across five real-world tasks and nine simulated RoboLab tasks,
-            RAGu reaches <b>80%</b> average success in the real world and <b>34.4%</b> average success in
+            RAGu reaches <b>80%</b> average success in the real world and <b>34.5%</b> average success in
             simulation, consistently outperforming base VLA policies, inference-time steering baselines, and
             retrieval-based adaptation methods.
           </p>
@@ -832,7 +868,7 @@
             <div class="lab">RoboLab avg. with 100 DROID demos<br>vs. 1% RiCL with the same demos</div>
           </div>
           <div class="result-card">
-            <div class="num">+11.6</div>
+            <div class="num">+11.7</div>
             <div class="lab">points over &pi;<sub>0.5</sub> on 9 RoboLab tasks<br>by scaling retrieval to 100 trajectories</div>
           </div>
           <div class="result-card">
@@ -865,11 +901,62 @@
           </p>
         </figure>
 
+        <h3 class="title is-4" style="margin-top:2rem;">Scaling the number of retrieved trajectories (RoboLab)</h3>
+        <figure class="paper-figure">
+          <img src="./static/images/robolab_multitraj_lineplot.png" alt="RoboLab success rate per task as the number of warped trajectories grows from 1 to 100.">
+          <div class="table-scroll">
+            <table class="paper-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" class="task">Task</th>
+                  <th rowspan="2">GROOT</th>
+                  <th rowspan="2">&pi;<sub>0.5</sub></th>
+                  <th colspan="2">1 traj</th>
+                  <th colspan="2">10 traj</th>
+                  <th colspan="2">30 traj</th>
+                  <th colspan="2">50 traj</th>
+                  <th colspan="2">100 traj</th>
+                </tr>
+                <tr>
+                  <th>SR</th><th>&Delta;</th>
+                  <th>SR</th><th>&Delta;</th>
+                  <th>SR</th><th>&Delta;</th>
+                  <th>SR</th><th>&Delta;</th>
+                  <th>SR</th><th>&Delta;</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr><td class="task">BananaInBowl</td><td>0</td><td class="base">4</td><td>28</td><td class="dp">+24</td><td>28</td><td class="dp">+24</td><td>28</td><td class="dp">+24</td><td>24</td><td class="dp">+20</td><td class="best">36</td><td class="best dp">+32</td></tr>
+              <tr><td class="task">MouseOnKeyboard</td><td>0</td><td class="base">12</td><td>16</td><td class="dp">+4</td><td>8</td><td class="dn">&minus;4</td><td>16</td><td class="dp">+4</td><td>20</td><td class="dp">+8</td><td class="best">24</td><td class="best dp">+12</td></tr>
+              <tr><td class="task">MustardAboveRaisin</td><td>4</td><td class="base">0</td><td>8</td><td class="dp">+8</td><td>0</td><td class="dz">+0</td><td>0</td><td class="dz">+0</td><td>0</td><td class="dz">+0</td><td class="best">16</td><td class="best dp">+16</td></tr>
+              <tr><td class="task">WoodSpatulaToBowl</td><td>4</td><td class="base">0</td><td>4</td><td class="dp">+4</td><td>0</td><td class="dz">+0</td><td>8</td><td class="dp">+8</td><td>4</td><td class="dp">+4</td><td class="best">12</td><td class="best dp">+12</td></tr>
+              <tr><td class="task">RubiksCubeOrBanana</td><td>0</td><td class="base">44</td><td>52</td><td class="dp">+8</td><td>47</td><td class="dp">+3</td><td>52</td><td class="dp">+8</td><td>56</td><td class="dp">+12</td><td class="best">68</td><td class="best dp">+24</td></tr>
+              <tr><td class="task">SauceBottlesCrate</td><td>0</td><td class="base">4</td><td>12</td><td class="dp">+8</td><td>16</td><td class="dp">+12</td><td>9</td><td class="dp">+5</td><td class="best">24</td><td class="best dp">+20</td><td>12</td><td class="dp">+8</td></tr>
+              <tr><td class="task">TakeMeasuringSpoonOut</td><td>0</td><td class="base">36</td><td>32</td><td class="dn">&minus;4</td><td class="best">44</td><td class="best dp">+8</td><td>32</td><td class="dn">&minus;4</td><td>36</td><td class="dz">+0</td><td>36</td><td class="dz">+0</td></tr>
+              <tr><td class="task">RubiksCube</td><td>0</td><td class="base">52</td><td>20</td><td class="dn">&minus;32</td><td class="best">68</td><td class="best dp">+16</td><td>64</td><td class="dp">+12</td><td>64</td><td class="dp">+12</td><td>65</td><td class="dp">+13</td></tr>
+              <tr><td class="task">ToyInBin</td><td>28</td><td class="base">60</td><td class="best">84</td><td class="best dp">+24</td><td>75</td><td class="dp">+15</td><td>64</td><td class="dp">+4</td><td>64</td><td class="dp">+4</td><td>60</td><td class="dz">+0</td></tr>
+              <tr class="mean"><td class="task">Mean</td><td>3.6</td><td class="base">22.8</td><td>26.4</td><td class="dp">+3.6</td><td>29.5</td><td class="dp">+6.7</td><td>28.1</td><td class="dp">+5.3</td><td>29.6</td><td class="dp">+6.8</td><td class="best">34.5</td><td class="best dp">+11.7</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="figure-caption">
+            <span class="figtag">Evaluation on RoboLab tasks with different numbers of trajectories.</span>
+            Task-wise success rates (%, 25 rollouts per task) across GROOT, &pi;<sub>0.5</sub>, and
+            &pi;<sub>0.5</sub> + RAGu guided by 1, 10, 30, 50, or 100 warped DROID demonstrations. Each
+            &Delta; column shows the absolute improvement over &pi;<sub>0.5</sub>; the best setting per task is in bold.
+            Scaling the number of trajectories significantly enhances policy robustness, with the mean success rate
+            increasing from 22.8% (&pi;<sub>0.5</sub>) to a peak of 34.5% when utilizing 100 demonstrations. The
+            largest gains appear on tasks requiring precise spatial alignment (<i>BananaInBowl</i> +32,
+            <i>RubiksCubeOrBanana</i> +24). Performance is not strictly monotonic at intermediate pool sizes, but the
+            100-demo setting is the most robust overall.
+          </p>
+        </figure>
+
         <div class="content has-text-justified" style="margin-top:1.5rem;">
           <h3 class="title is-4">Key findings</h3>
           <ul>
             <li><b>Scaling retrieval helps.</b> On nine RoboLab tasks, mean success grows from 22.8%
-              (&pi;<sub>0.5</sub>) to 34.4% with 100 warped demos &mdash; large gains on tasks needing precise
+              (&pi;<sub>0.5</sub>) to 34.5% with 100 warped demos &mdash; large gains on tasks needing precise
               object-relative positioning (<i>BananaInBowl</i> +32, <i>RubiksCubeOrBanana</i> +24). Broad trajectory
               coverage acts as a dense structural prior rather than a template to copy.</li>
             <li><b>Sim-to-real transfer survives multi-stage tasks.</b> In the <i>Banana-to-Plate</i> task,

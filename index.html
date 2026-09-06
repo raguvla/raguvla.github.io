@@ -953,6 +953,47 @@
           </p>
         </figure>
 
+        <h3 class="title is-4" style="margin-top:2rem;">Trajectory quality (RoboLab)</h3>
+        <figure class="paper-figure">
+          <div class="table-scroll">
+            <table class="paper-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" class="task">Task</th>
+                  <th colspan="3" class="grp">&pi;<sub>0.5</sub></th>
+                  <th colspan="3" class="grp">&pi;<sub>0.5</sub> + Ours (1 traj)</th>
+                  <th colspan="3">&pi;<sub>0.5</sub> + Ours (100 traj)</th>
+                </tr>
+                <tr>
+                  <th>SPARC</th><th>Path (m)</th><th class="grp">Speed (cm/s)</th>
+                  <th>SPARC</th><th>Path (m)</th><th class="grp">Speed (cm/s)</th>
+                  <th>SPARC</th><th>Path (m)</th><th>Speed (cm/s)</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr><td class="task">BananaInBowl</td><td>&minus;9.40</td><td>4.14</td><td class="grp">7.4</td><td>&minus;8.62</td><td>3.63</td><td class="grp">7.3</td><td>&minus;10.34</td><td>6.06</td><td>7.3</td></tr>
+              <tr><td class="task">MouseOnKeyboard</td><td>&minus;10.51</td><td>6.17</td><td class="grp">9.6</td><td>&minus;10.71</td><td>5.33</td><td class="grp">8.8</td><td>&minus;11.35</td><td>5.46</td><td>8.4</td></tr>
+              <tr><td class="task">MustardAboveRaisin</td><td>&minus;8.55</td><td>4.72</td><td class="grp">11.1</td><td>&minus;10.47</td><td>4.86</td><td class="grp">8.5</td><td>&minus;9.21</td><td>5.49</td><td>9.4</td></tr>
+              <tr><td class="task">WoodSpatulaToBowl</td><td>&minus;9.87</td><td>8.21</td><td class="grp">12.6</td><td>&minus;9.85</td><td>7.88</td><td class="grp">11.8</td><td>&minus;9.73</td><td>7.51</td><td>11.5</td></tr>
+              <tr><td class="task">RubiksCubeOrBanana</td><td>&minus;7.01</td><td>2.21</td><td class="grp">7.9</td><td>&minus;6.97</td><td>2.09</td><td class="grp">7.9</td><td>&minus;6.40</td><td>1.79</td><td>8.0</td></tr>
+              <tr><td class="task">SauceBottlesCrate</td><td>&minus;8.72</td><td>3.94</td><td class="grp">8.4</td><td>&minus;8.21</td><td>3.46</td><td class="grp">8.4</td><td>&minus;9.26</td><td>4.07</td><td>8.7</td></tr>
+              <tr><td class="task">TakeMeasuringSpoonOut</td><td>&minus;9.86</td><td>5.57</td><td class="grp">8.8</td><td>&minus;10.81</td><td>6.98</td><td class="grp">8.0</td><td>&minus;10.11</td><td>6.00</td><td>8.3</td></tr>
+              <tr><td class="task">RubiksCube</td><td>&minus;10.62</td><td>8.46</td><td class="grp">8.4</td><td>&minus;8.68</td><td>3.19</td><td class="grp">8.2</td><td>&minus;11.16</td><td>8.34</td><td>8.7</td></tr>
+              <tr><td class="task">ToyInBin</td><td>&minus;9.76</td><td>9.95</td><td class="grp">10.1</td><td>&minus;9.81</td><td>10.87</td><td class="grp">9.1</td><td>&minus;6.31</td><td>2.57</td><td>9.7</td></tr>
+              <tr class="mean"><td class="task">Average</td><td>&minus;9.37</td><td>5.93</td><td class="grp">9.37</td><td>&minus;9.35</td><td>5.37</td><td class="grp">8.67</td><td>&minus;9.32</td><td>5.25</td><td>8.89</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="figure-caption">
+            <span class="figtag">Trajectory metrics across RoboLab tasks for &pi;<sub>0.5</sub>, Ours with 1 trajectory, and with 100 trajectories.</span>
+            EE SPARC is unitless; Path is measured in meters; Speed is measured in cm/s. Higher EE SPARC indicates
+            smoother motion. Averaged across the nine tasks, RAGu with 100 trajectories produces the smoothest motions
+            (EE SPARC &minus;9.32), the shortest average end-effector path (5.25&nbsp;m vs. 5.93&nbsp;m for
+            &pi;<sub>0.5</sub>), and comparable speed (8.89&nbsp;cm/s), indicating that larger retrieval sets improve
+            efficiency through smoother, more direct motion rather than more aggressive execution.
+          </p>
+        </figure>
+
         <h3 class="title is-4" style="margin-top:2rem;">Cross-morphology evaluation (GR-1 humanoid, RoboCasa)</h3>
         <figure class="paper-figure">
           <div class="table-scroll">

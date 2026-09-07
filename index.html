@@ -333,6 +333,27 @@
       border-bottom: 2px solid #363636;
       background: #fafafa;
     }
+    /* STAR-Gen task-progress criteria table */
+    table.progress-table { min-width: 0; font-size: 0.88rem; }
+    table.progress-table th, table.progress-table td {
+      white-space: normal;
+      text-align: left;
+      vertical-align: top;
+      padding: 0.45rem 0.6rem;
+      line-height: 1.35;
+    }
+    table.progress-table th.score, table.progress-table td.score {
+      text-align: center;
+      width: 4.5rem;
+      font-weight: 700;
+      font-family: 'Google Sans', sans-serif;
+      color: #1f4e8c;
+      border-right: 1px solid #bbb;
+    }
+    table.progress-table th .th-sub { font-weight: 400; font-size: 0.78rem; color: #777; }
+    table.progress-table tr.full td { background: #f3f7fb; }
+    table.progress-table tr.full td.score { color: #1F7A1F; }
+    table.progress-table tbody tr:last-child td { border-bottom: 2px solid #363636; }
 
     /* Experiments grid */
     .exp-task-title { margin-top: 2rem; margin-bottom: 0.75rem; }
@@ -1051,18 +1072,75 @@
         </div>
 
         <h3 class="title is-4" style="margin-top:2rem;">Systematic generalization on the real robot (STAR-Gen)</h3>
+        <div class="content has-text-justified">
+          <p>
+            <b>Evaluation protocol.</b> We evaluate real-robot generalization using STAR-Gen, which constructs
+            controlled task variations from a base task along four axes: <i>visual-task</i> changes,
+            <i>object-pose</i> changes, <i>action-verb</i> changes, and <i>new-object</i> changes. Each task includes
+            the original setup and four generated variants. For each task&ndash;variant pair, we conduct one trial per
+            method using the same initial scene configuration and language instruction. Rather than reporting only
+            binary success, we assign a <b>task-progress score from 0 to 100</b>, following sequential and visually
+            verifiable task milestones. This protocol lets us distinguish failures to <i>approach</i>,
+            <i>interact with</i>, and <i>complete</i> the task.
+          </p>
+        </div>
         <figure class="paper-figure">
           <img src="./static/images/stargen_table.png" alt="Per-trial task progress of RAGu and baselines across STAR-Gen generalization axes on the real Franka.">
           <p class="figure-caption">
             <span class="figtag">Per-trial task progress across STAR-Gen perturbations.</span>
-            Columns are the STAR-Gen generalization axes (original task, visual distractors, a new object, shifted
-            object poses, and rephrased action verbs); rows are pick-and-place and articulated-object tasks on the real
-            Franka. Above each initial scene, a bar runs from white (0) to black (100% task progress) and a triangle
-            marks the progress each method reached on that trial: Ours (red), &pi;<sub>0.5</sub> (blue), Steering + VLM
-            (teal), and RiCL (gray). RAGu stays near the high end on every axis, while the baselines mostly stall after
-            approaching or grasping the object.
+            Columns are the STAR-Gen generalization axes (original task, visual-task changes, a new object, shifted
+            object poses, and rephrased action verbs); rows are the pick-and-place and articulated-object base tasks on
+            the real Franka. Above each initial scene, a bar runs from white (0) to black (100) task progress and a
+            triangle marks the score each method reached on that trial: Ours (red), &pi;<sub>0.5</sub> (blue),
+            Steering + VLM (teal), and RiCL (gray). RAGu stays near the high end on every axis, while the baselines
+            mostly stall at the approach or grasp milestones.
           </p>
         </figure>
+
+        <h4 class="title is-5" style="margin-top:1.5rem;">Task-progress criteria</h4>
+        <div class="table-scroll">
+          <table class="paper-table progress-table">
+            <thead>
+              <tr>
+                <th class="score">Score</th>
+                <th>Pick-and-place tasks<br><span class="th-sub">approach &rarr; grasp &rarr; transport &rarr; place</span></th>
+                <th>Articulated-object tasks (drawers, cabinets)<br><span class="th-sub">approach &rarr; handle interaction &rarr; opening completion</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="score">0</td>
+                <td>No task-directed motion toward the object.</td>
+                <td>No task-directed motion.</td>
+              </tr>
+              <tr>
+                <td class="score">25</td>
+                <td>Reaches or touches the object but does not securely grasp it.</td>
+                <td>Reaches the drawer or cabinet and contacts its front, door, or an incorrect part.</td>
+              </tr>
+              <tr>
+                <td class="score">50</td>
+                <td>Successful grasp, evidenced by the object moving with the gripper.</td>
+                <td>Contacts or grasps the correct handle without a meaningful opening motion.</td>
+              </tr>
+              <tr>
+                <td class="score">75</td>
+                <td>Transports the object toward the target but fails to release it correctly or leaves it short of the target.</td>
+                <td>Partially opens the drawer or door but releases it, stalls, uses an incorrect interaction, or does not open it fully.</td>
+              </tr>
+              <tr class="full">
+                <td class="score">100</td>
+                <td>Object is stably placed on the target plate and released.</td>
+                <td>The specified drawer or cabinet door is fully opened through the instructed interaction.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="figure-caption">
+          <span class="figtag">Scoring.</span>
+          The final score reflects the furthest milestone reached in a single trial, providing credit for meaningful
+          partial progress while reserving full credit for complete and correct task execution.
+        </p>
       </div>
     </div>
   </div>

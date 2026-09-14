@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="RAGu: Retrieval-Augmented Guidance — Zero-Shot VLA Adaptation with Retrieved Guidance">
+  <meta name="keywords" content="VLA, Vision Language Action, Retrieval-Augmented Generation, Zero-Shot Adaptation, Robot Manipulation">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zero-Shot VLA Adaptation with Retrieved Guidance</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/faviconka.svg">
+
+  <style>
+    .section.is-light { background-color: #f5f5f5; }
+
+    .hero.is-light-hero { background-color: #fff; }
+    .publication-venue { color: #555; font-weight: 600; }
+    .publication-links { margin-top: 1rem; }
+
+    .tagline {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 1.25rem;
+      margin-top: 0.75rem;
+    }
+    .tagline .rag { color: #b22222; font-weight: 700; }
+    .tagline .gu  { color: #1f4e8c; font-weight: 700; }
+    .tagline .green { color: #1F7A1F; font-weight: 700; }
+
+    .figure-caption {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 0.6rem;
+      text-align: justify;
+    }
+    .figure-caption .figtag { font-weight: 700; color: #363636; }
+
+    figure.paper-figure { margin: 1rem 0 2rem 0; }
+    figure.paper-figure img {
+      width: 100%;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    /* Method step cards */
+    .step-list { counter-reset: step; margin-top: 1.5rem; }
+    .step-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.9rem;
+      text-align: left;
+    }
+    .step-num {
+      flex: 0 0 auto;
+      width: 2.1rem; height: 2.1rem;
+      border-radius: 50%;
+      background: #1f4e8c;
+      color: #fff;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Google Sans', sans-serif;
+    }
+    .step-body h5 { margin-bottom: 0.25rem; font-weight: 700; }
+    .step-body p { font-size: 0.95rem; color: #4a4a4a; margin: 0; }
+
+    /* Warping video pipeline */
+    .warp-pipeline {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .warp-grid {
+      display: grid;
+      grid-template-columns: 1fr 3rem 1fr;
+      gap: 0.75rem 0;
+      align-items: center;
+    }
+    .warp-head {
+      text-align: center;
+      font-family: 'Google Sans', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      padding-bottom: 0.25rem;
+    }
+    .warp-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #fff;
+      background: #1f4e8c;
+      border-radius: 10px;
+      padding: 1px 10px;
+      margin-right: 0.4rem;
+      vertical-align: middle;
+    }
+    .warp-badge.is-run { background: #1F7A1F; }
+    .warp-grid video {
+      width: 100%;
+      border-radius: 8px;
+      background: #000;
+      display: block;
+    }
+    .warp-arrow {
+      text-align: center;
+      font-size: 1.6rem;
+      color: #b22222;
+      font-weight: 700;
+      user-select: none;
+    }
+    .warp-viewlabel {
+      font-size: 0.8rem;
+      color: #777;
+      text-align: center;
+      margin-top: 0.2rem;
+    }
+    .warp-down {
+      text-align: center;
+      font-size: 1.8rem;
+      color: #b22222;
+      font-weight: 700;
+      margin: 0.75rem 0 0.5rem 0;
+      user-select: none;
+    }
+    .warp-run video, .mw-grid video { width: 100%; border-radius: 8px; background: #000; display: block; }
+    .warp-note { font-size: 0.85rem; color: #666; margin-top: 0.75rem; text-align: center; }
+    @media (max-width: 768px) {
+      .warp-grid { grid-template-columns: 1fr; }
+      .warp-arrow { transform: rotate(90deg); margin: 0.25rem 0; }
+      .warp-head.is-right { margin-top: 0.5rem; }
+    }
+
+    /* Source-demo filmstrip -> warped target */
+    .warp-stage {
+      display: grid;
+      grid-template-columns: 5fr 5.5rem 5fr;
+      gap: 0.5rem 0;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+    .warp-stage-head { align-self: start; }
+    .filmstrip {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    .src-tile { position: relative; }
+    .src-tile video {
+      width: 100%;
+      border-radius: 6px;
+      background: #000;
+      display: block;
+    }
+    .src-tile.is-featured video,
+    .src-tile.is-selected video {
+      outline: 3px solid #1F7A1F;
+      outline-offset: -3px;
+    }
+    .src-tile.is-discarded video {
+      outline: 3px solid #b22222;
+      outline-offset: -3px;
+    }
+    .src-tile .src-tag {
+      position: absolute;
+      left: 6px; bottom: 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(31, 122, 31, 0.92);
+      border-radius: 8px;
+      padding: 0 7px;
+      pointer-events: none;
+    }
+    .src-tile.is-discarded .src-tag {
+      background: rgba(178, 34, 34, 0.92);
+    }
+    .warped-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      align-items: start;
+    }
+    .warped-grid .warp-viewlabel { margin: 0 0 -0.2rem 0; }
+    .warped-tile { position: relative; }
+    .warped-tile video {
+      width: 100%;
+      border-radius: 6px;
+      background: #000;
+      display: block;
+      outline: 3px solid #1F7A1F;
+      outline-offset: -3px;
+    }
+    .warped-tile .src-tag {
+      position: absolute;
+      left: 6px; bottom: 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(31, 122, 31, 0.92);
+      border-radius: 8px;
+      padding: 0 7px;
+      pointer-events: none;
+    }
+    .retrieve-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+    .retrieve-grid video { width: 100%; border-radius: 8px; background: #000; display: block; }
+    @media (max-width: 768px) { .retrieve-grid { grid-template-columns: 1fr; } }
+    .warp-stage .warp-viewlabel { margin-top: 0.15rem; }
+    .warp-mid {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.15rem; text-align: center;
+    }
+    .warp-ellipsis { font-size: 2.4rem; line-height: 1; color: #555; letter-spacing: 0.08em; }
+    .warp-count { font-size: 0.7rem; font-weight: 700; color: #1F7A1F; white-space: nowrap; line-height: 1.15; }
+    @media (max-width: 768px) {
+      .warp-stage { grid-template-columns: 1fr; }
+      .warp-stage .warp-arrow { transform: rotate(90deg); margin: 0.25rem 0; }
+    }
+
+    /* Simulation rollout rows */
+    .sim-row { margin-bottom: 0.4rem; }
+    .sim-row video {
+      width: 100%;
+      border-radius: 6px;
+      background: #000;
+      display: block;
+    }
+    .sim-row .sim-label {
+      font-size: 0.8rem;
+      color: #555;
+      text-align: center;
+      margin: 0.25rem 0 0.75rem 0;
+      font-weight: 600;
+    }
+
+    /* Simulation rollout grids */
+    .sim-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin: 1rem 0 0.5rem 0;
+    }
+    .sim-cell video {
+      width: 100%;
+      border-radius: 6px;
+      background: #000;
+      display: block;
+    }
+    .sim-cell .sim-label {
+      font-size: 0.8rem;
+      color: #555;
+      text-align: center;
+      margin-top: 0.25rem;
+      font-weight: 600;
+    }
+    @media (max-width: 768px) {
+      .sim-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Key results */
+    .result-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0 2rem 0;
+    }
+    .result-card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 1.1rem 0.9rem;
+      text-align: center;
+    }
+    .result-card .num {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #b22222;
+    }
+    .result-card .lab {
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: 0.3rem;
+      line-height: 1.3;
+    }
+    @media (max-width: 768px) {
+      .result-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Paper-style results table */
+    .table-scroll { overflow-x: auto; margin-top: 1rem; width: 100%; }
+    #results .column { min-width: 0; }
+    table.paper-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 720px;
+      font-size: 0.82rem;
+      color: #363636;
+    }
+    table.paper-table th, table.paper-table td {
+      padding: 0.3rem 0.45rem;
+      text-align: center;
+      white-space: nowrap;
+      border-bottom: 1px solid #ececec;
+    }
+    table.paper-table thead th {
+      font-weight: 700;
+      border-bottom: 1px solid #bbb;
+      background: #fafafa;
+    }
+    table.paper-table thead tr:first-child th { border-top: 2px solid #363636; }
+    table.paper-table th.task, table.paper-table td.task { text-align: left; }
+    table.paper-table td.task { font-family: monospace; font-size: 0.8rem; }
+    table.paper-table td.base { color: #777; }
+    table.paper-table td.dp { color: #1a9850; }
+    table.paper-table td.dn { color: #d73027; }
+    table.paper-table td.dz { color: #999; }
+    table.paper-table td.best { font-weight: 700; }
+    table.paper-table th.grp, table.paper-table td.grp { border-right: 1px solid #bbb; }
+    table.paper-table tr.mean td {
+      font-weight: 700;
+      border-top: 1px solid #bbb;
+      border-bottom: 2px solid #363636;
+      background: #fafafa;
+    }
+    /* 95% confidence interval shown under each success rate */
+    table.paper-table .ci {
+      display: block;
+      font-size: 0.66rem;
+      font-weight: 400;
+      color: #9a9a9a;
+      line-height: 1.15;
+      margin-top: 0.05rem;
+    }
+    table.paper-table td { vertical-align: top; }
+    /* Narrow RoboLab comparison table: do not stretch to full width */
+    table.paper-table.sim-table { min-width: 0; width: auto; margin: 0 auto; }
+    table.paper-table.sim-table th, table.paper-table.sim-table td { padding: 0.35rem 1.1rem; }
+    /* Note explaining the confidence intervals */
+    .ci-note {
+      font-size: 0.9rem;
+      color: #555;
+      background: #f7f7f9;
+      border-left: 3px solid #bbb;
+      border-radius: 4px;
+      padding: 0.8rem 1.1rem;
+      margin: 1.25rem 0 1.75rem 0;
+    }
+    .ci-note p { margin: 0; }
+    .ci-note .formula { white-space: nowrap; }
+    /* STAR-Gen task-progress criteria table */
+    table.progress-table { min-width: 0; font-size: 0.88rem; }
+    table.progress-table th, table.progress-table td {
+      white-space: normal;
+      text-align: left;
+      vertical-align: top;
+      padding: 0.45rem 0.6rem;
+      line-height: 1.35;
+    }
+    table.progress-table th.score, table.progress-table td.score {
+      text-align: center;
+      width: 4.5rem;
+      font-weight: 700;
+      font-family: 'Google Sans', sans-serif;
+      color: #1f4e8c;
+      border-right: 1px solid #bbb;
+    }
+    table.progress-table th .th-sub { font-weight: 400; font-size: 0.78rem; color: #777; }
+    table.progress-table tr.full td { background: #f3f7fb; }
+    table.progress-table tr.full td.score { color: #1F7A1F; }
+    table.progress-table tbody tr:last-child td { border-bottom: 2px solid #363636; }
+
+    /* Real-robot rollouts (tabbed, omniguide-style) */
+    .rr-task-tabs { margin-bottom: 1rem !important; }
+    .rr-task-tabs a { font-weight: 600; }
+    .rr-task-tabs a, .rr-method-tabs a { cursor: pointer; }
+    .rr-method-tabs { margin-top: 0.25rem !important; margin-bottom: 1rem !important; }
+    .rr-task-panel, .rr-method-panel { display: none; }
+    .rr-task-panel.is-active, .rr-method-panel.is-active { display: block; }
+    .rr-pair {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .rr-clip { text-align: center; min-width: 0; }
+    .rr-clip video {
+      width: 100%;
+      max-width: 100%;
+      aspect-ratio: 448 / 124;
+      display: block;
+      border-radius: 8px;
+      background: #000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .rr-label {
+      display: inline-block; font-size: 0.9rem; font-weight: 700;
+      padding: 1px 10px; border-radius: 10px; margin-bottom: 0.4rem;
+    }
+    .rr-success { color: #1a9850; }
+    .rr-fail { color: #d73027; }
+    .rr-na {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 5rem; background: #f0f0f0; color: #999;
+      border-radius: 8px; font-size: 0.95rem;
+    }
+    @media (max-width: 768px) {
+      .rr-task-tabs ul { flex-wrap: wrap; flex-shrink: 1; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ======================================================= Hero -->
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Zero-Shot VLA Adaptation<br>with Retrieved Guidance</h1>
+          <div class="is-size-4 publication-title" style="margin-bottom: 0.75rem;">
+            <span style="color:#b22222;font-weight:700;">RAG</span><span style="color:#1f4e8c;font-weight:700;">u</span>:
+            <u>R</u>etrieval-<u>A</u>ugmented <u>Gu</u>idance
+          </div>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Anonymous Authors</span>
+          </div>
+          <div class="is-size-6 publication-venue" style="margin:0.35rem auto 0;">
+            Under review at CoRL 2026
+          </div>
+
+          <div class="publication-links">
+            <span class="link-block">
+              <a href="#method" class="button is-dark is-rounded is-small">
+                <span>Method</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#results" class="button is-dark is-rounded is-small">
+                <span>Results</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#rollouts" class="button is-dark is-rounded is-small">
+                <span>Robot Rollouts</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="https://huggingface.co/datasets/raguvla/real-world-evaluation"
+                 class="button is-dark is-rounded is-small" target="_blank" rel="noopener">
+                <span>Evaluation Data</span>
+              </a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= Teaser -->
+<section class="hero teaser">
+  <div class="container is-max-widescreen">
+    <div class="hero-body" style="padding-top: 0;">
+      <figure class="paper-figure" style="margin-bottom: 0.5rem;">
+        <img src="./static/images/teaser.jpg"
+             alt="RAGu enables zero-shot adaptation across domains and embodiments.">
+      </figure>
+      <p class="figure-caption has-text-centered" style="max-width: 62rem; margin-left:auto; margin-right:auto;">
+        A single retrieval-augmented guidance mechanism transfers manipulation knowledge across four settings:
+        <b>Real&rarr;Real</b> (DROID demos to novel real-world Franka scenes),
+        <b>Real&rarr;Sim</b> (DROID to RoboLab, and to a 29-DoF GR-1 bimanual humanoid in RoboCasa),
+        and <b>Sim&rarr;Real</b> (Meta-World Sawyer demos to the real-world DROID setup) &mdash;
+        all with the base VLA's weights completely frozen.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= Abstract -->
+<section class="section is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Pre-training large parametric &ldquo;Vision-Language-Action&rdquo; (VLA) models on large demonstration
+            datasets has recently yielded promising results for general-purpose manipulation, yet these models
+            still struggle under even small domain shifts relative to the training data, such as changes in camera
+            viewpoint, background, object identity, or robot morphology. Crucially, any trained roboticist would
+            <i>know</i> the appropriate compensation mechanisms for such domain shifts: for instance, attending to
+            the key task-relevant entities and mapping spatial geometry to extract useful dynamics for the target
+            task.
+          </p>
+          <p>
+            We propose <b>Retrieval-Augmented Guidance (RAGu)</b>, which non-parametrically injects such knowledge
+            into a target VLA to make it robust. To enable near-real-time retrieval augmentation for VLAs, we design
+            a <b>coarse-to-fine retrieval</b> process that iteratively filters the source datasets by target task
+            category, dynamic similarity, and finally the VLA&rsquo;s policy priors at the current moment in time.
+            By executing only the finest stage within the closed control loop at inference time, we achieve
+            computational efficiency and show that explicit visual knowledge injection helps base VLAs overcome
+            domain shifts while preserving their motor priors.
+          </p>
+          <p>
+            We evaluate across real-world, simulation, sim-to-real transfer, and cross-embodiment humanoid
+            manipulation, and find that RAGu improves frozen VLA policies from <b>20% to 80%</b> average success
+            in the real world and outperforms retrieval-augmented fine-tuning baselines in simulation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= Method -->
+<section class="section" id="method">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">Method</h2>
+        <div class="content has-text-justified">
+          <p>
+            Implementing retrieval-augmented generation for robotics must overcome <b>three key problems</b>:
+            <b>(1)&nbsp;Retrieval scalability</b> &mdash; full retrieval from a large database inside the closed
+            control loop is too computationally expensive;
+            <b>(2)&nbsp;Cross-domain generalization</b> &mdash; even the best-matched trajectories in the largest
+            robotics datasets are still domain-shifted in viewpoint, scene geometry, and embodiment; and
+            <b>(3)&nbsp;Context-efficient adaptation</b> &mdash; VLAs are often too small to concatenate retrieved
+            examples into their input context. RAGu addresses all three with a coarse-to-fine
+            <b>warp&nbsp;&rarr;&nbsp;retrieve&nbsp;&rarr;&nbsp;steer</b> pipeline that turns cross-domain
+            demonstrations into an inference-time guidance field for a frozen flow-matching VLA.
+          </p>
+        </div>
+
+        <figure class="paper-figure">
+          <img src="./static/images/figure1.jpg?v=3" alt="Overview of the RAGu pipeline: semantic task filtering, warp, retrieve, steer.">
+          <p class="figure-caption">
+            <span class="figtag">Overview of the RAGu pipeline.</span>
+            <b>(a) Semantic task filtering.</b> A large cross-domain dataset (e.g., DROID) is filtered by the
+            language instruction into a task category (pick &amp; place, close, open, wipe), yielding a small pool of
+            candidate trajectories.
+            <b>(b) Warp.</b> Each candidate is warped into the novel target scene through dense semantic
+            correspondences (W1&rarr;W1&prime;, W2&rarr;W2&prime;) established with object bounding boxes from
+            Grounding DINO, bridging the spatial gap between the source and target domains.
+            <b>(c) Retrieve.</b> Among the warped candidates, RAGu selects the prior-aligned trajectory <i>i*</i>
+            that lies closest to the VLA&rsquo;s own action proposal <i>X</i>
+            (<i>X</i>&thinsp;&minus;&thinsp;<i>i*</i> &lt; <i>X</i>&thinsp;&minus;&thinsp;<i>i&prime;</i>), i.e., the
+            candidate with the smallest guidance gradient norm, ensuring natural alignment with the VLA&rsquo;s
+            generative prior.
+            <b>(d) Steer.</b> The selected trajectory defines an energy guidance field
+            <i>L</i> &asymp; <i>X</i>&thinsp;&minus;&thinsp;<i>i*</i> that steers the frozen VLA&rsquo;s
+            flow-matching denoising process at test time, achieving zero-shot out-of-distribution adaptation.
+          </p>
+        </figure>
+
+        <div class="step-list">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h5>Semantic task-category filtering</h5>
+              <p>
+                Large unstructured datasets (e.g., DROID) or simulation benchmarks (e.g., Meta-World) are first
+                filtered into a ~100-trajectory pool using semantic keywords for broad task dynamics such as
+                <i>pick-and-place</i>, <i>wiping</i>, or <i>closing</i> &mdash; ensuring structural compatibility
+                with the target task before any expensive computation.
+              </p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h5>Warp &mdash; cross-domain trajectories into the target scene</h5>
+              <p>
+                Because cross-domain scenes rarely share
+                object instances, strict in-domain visual matching is replaced with semantic bounding boxes for
+                task-relevant entities (via Grounding DINO), localizing target waypoints in the new scene. Each
+                source trajectory&rsquo;s 3D waypoints are then warped into the target geometry. Crucially, warped
+                paths are used only as <b>spatial priors</b> &mdash; the VLA&rsquo;s innate generalization manages
+                the closed-loop manipulation, avoiding the unreliability of directly executing warped paths with
+                inverse kinematics.
+              </p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h5>Retrieve &mdash; coarse-to-fine, policy-aligned</h5>
+              <p>
+                <b>Coarse (static):</b> for each task-dynamics group, a reference trajectory that is geometrically
+                relevant and compatible with the VLA prior anchors a Dynamic Time Warping (DTW) pruning step,
+                keeping only the top-<i>K</i> warped candidates (e.g., K=8 for real-robot, K=16 for RoboLab, K=3
+                for the humanoid).
+                <b>Fine (inference-time):</b> in the control loop, the VLA&rsquo;s predicted action chunk is mapped
+                to a Cartesian end-effector path via forward kinematics, and RAGu selects the candidate whose
+                tracking-cost <b>gradient has the smallest norm</b> &mdash; the trajectory requiring the least
+                change to the VLA&rsquo;s current dynamics, hence closest to the policy&rsquo;s own intent. Only
+                this fine stage runs in the loop, once per inference at the first denoising step.
+              </p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <h5>Steer &mdash; test-time guidance of the action denoising</h5>
+              <p>
+                The selected warped trajectory instantiates an energy function whose gradient is subtracted from the
+                flow-matching velocity field (<i>v<sub>guided</sub> = v &minus; &gamma;&nabla;L<sub>warp</sub></i>),
+                steering action generation toward the retrieved trajectory while the VLA&rsquo;s weights stay frozen
+                and its motor priors stay intact.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================== Warping showcase -->
+        <h3 class="title is-4" style="margin-top: 3rem;">Warp &rarr; Retrieve &rarr; Steer, in action</h3>
+        <div class="content has-text-justified">
+          <p>
+            The clips below show the RAGu pipeline on the real robot. RAGu draws on <b>many</b> cross-domain
+            source demonstrations from DROID (left; the rainbow curve traces each demo&rsquo;s 3D end-effector
+            trajectory, yellow marks the gripper) &mdash; different tables, objects, cameras, and backgrounds.
+            All of their trajectories are <b>warped</b> into the target scene via semantic correspondences
+            (right; three warped candidates, each shown from two camera views, all sharing the same bowl and
+            pot keypoints). At run time, RAGu <b>retrieves</b> the warped candidate best aligned with the
+            VLA&rsquo;s current intent (middle; the full candidate pool overlaid, retrieved one highlighted) and
+            uses it to <b>steer</b> the frozen &pi;<sub>0.5</sub> policy in the real world (bottom).
+          </p>
+        </div>
+
+        <div class="warp-pipeline">
+          <div class="warp-stage">
+            <div class="warp-stage-head">
+              <div class="warp-head">
+                <span class="warp-badge">Step 1</span> Source demos <span style="color:#777;font-weight:400;">(cross-domain, DROID)</span>
+              </div>
+            </div>
+            <div></div>
+            <div class="warp-stage-head">
+              <div class="warp-head is-right">
+                <span class="warp-badge">Step 2</span> Warped into the target scene
+              </div>
+            </div>
+
+            <div class="filmstrip">
+              <div class="src-tile is-featured">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_cup.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">Reference trajectory</span>
+              </div>
+              <div class="src-tile is-selected">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_bowl.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">selected</span>
+              </div>
+              <div class="src-tile is-selected">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_marker.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">selected</span>
+              </div>
+              <div class="src-tile is-selected">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_eggs.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">selected</span>
+              </div>
+              <div class="src-tile is-discarded">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_basket.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">discarded</span>
+              </div>
+              <div class="src-tile is-discarded">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/sources/src_tray.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">discarded</span>
+              </div>
+            </div>
+
+            <div class="warp-mid">
+              <div class="warp-ellipsis">&#8943;</div>
+              <div class="warp-count">~100 demos<br>warped</div>
+              <div class="warp-arrow">&rarr;</div>
+            </div>
+
+            <div class="warped-grid">
+              <div class="warp-viewlabel">Camera view 1</div>
+              <div class="warp-viewlabel">Camera view 2</div>
+              <div class="warped-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_single_1_cam1.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">warped candidate 1</span>
+              </div>
+              <div class="warped-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_single_1_cam2.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">warped candidate 1</span>
+              </div>
+              <div class="warped-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_single_2_cam1.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">warped candidate 2</span>
+              </div>
+              <div class="warped-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_single_2_cam2.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">warped candidate 2</span>
+              </div>
+              <div class="warped-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_single_3_cam1.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">warped candidate 3</span>
+              </div>
+              <div class="warped-tile">
+                <video autoplay muted loop playsinline preload="auto">
+                  <source src="./static/videos/method/warped_single_3_cam2.mp4" type="video/mp4">
+                </video>
+                <span class="src-tag">warped candidate 3</span>
+              </div>
+            </div>
+          </div>
+          <p class="warp-note" style="margin-top:0.5rem;">
+            Six of the ~100 pick-and-place source demonstrations used by RAGu. The
+            <span style="color:#1F7A1F;font-weight:700;">reference trajectory</span> anchors DTW pruning:
+            <span style="color:#1F7A1F;font-weight:700;">selected</span> candidates are retained in the top-<i>K</i>
+            pool and warped into the target scene (right), while
+            <span style="color:#b22222;font-weight:700;">discarded</span> ones are pruned. The warped
+            candidates on the right are drawn from the full ~100-demo pool, not only the six tiles shown.
+          </p>
+
+          <div class="warp-down">&darr;</div>
+          <div class="warp-head" style="margin-bottom: 0.6rem;">
+            <span class="warp-badge">Step 3</span> Retrieve
+            <span style="color:#777;font-weight:400;">(best policy-aligned candidate from the warped pool)</span>
+          </div>
+          <div class="retrieve-grid">
+            <div>
+              <video autoplay muted loop playsinline preload="auto">
+                <source src="./static/videos/method/warped_multitraj_cam1.mp4" type="video/mp4">
+              </video>
+              <div class="warp-viewlabel">Camera view 1</div>
+            </div>
+            <div>
+              <video autoplay muted loop playsinline preload="auto">
+                <source src="./static/videos/method/warped_multitraj_cam2.mp4" type="video/mp4">
+              </video>
+              <div class="warp-viewlabel">Camera view 2</div>
+            </div>
+          </div>
+          <p class="warp-note">
+            The warped candidates share the same bowl and pot keypoints but differ in approach. At the first
+            denoising step of each inference, RAGu retrieves the candidate whose guidance gradient is smallest
+            &mdash; the one closest to the policy&rsquo;s own intent &mdash; tracked by the
+            gripper.
+          </p>
+
+          <div class="warp-down">&darr;</div>
+          <div class="warp-head" style="margin-bottom: 0.6rem;">
+            <span class="warp-badge is-run">Step 4</span> Steer &mdash; frozen &pi;<sub>0.5</sub> guided rollout
+          </div>
+          <div class="warp-run">
+            <video autoplay muted loop playsinline preload="auto">
+              <source src="./static/videos/method/real_run_c.mp4" type="video/mp4">
+            </video>
+          </div>
+          <p class="warp-note">
+            The retrieved trajectory defines the guidance energy that steers the denoising process. The strip
+            shows the actual robot execution from multiple cameras.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= Cross-domain transfer -->
+<section class="section is-light" id="transfer">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">One Mechanism, Four Transfer Settings</h2>
+        <div class="content has-text-justified">
+          <p>
+            Because warped 3D trajectories abstract away appearance, viewpoint, and embodiment, the same
+            retrieval-augmented guidance transfers across radically different source&ndash;target pairs.
+          </p>
+        </div>
+
+        <h3 class="title is-4" style="margin-top:1.5rem;">Real &rarr; Sim: DROID demonstrations guide simulated robots</h3>
+        <figure class="paper-figure">
+          <img src="./static/images/robolab_all.jpg" alt="DROID source demos warped into nine RoboLab tasks.">
+          <p class="figure-caption">
+            <span class="figtag">RoboLab environment overview.</span>
+            100 real-world source trajectories are queried from DROID (left) and warped into nine simulated RoboLab
+            tasks. The transparent streams visualize the spatial diversity of the warped candidate trajectories;
+            RAGu&rsquo;s in-the-loop retrieval picks whichever candidate best matches the policy&rsquo;s intent at
+            each moment.
+          </p>
+        </figure>
+        <h4 class="title is-5" style="margin-top:1.5rem;">Successful RoboLab rollouts (&pi;<sub>0.5</sub> + RAGu)</h4>
+        <div style="margin-top:1rem;">
+          <div class="sim-row">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_sauce_bottle_in_crate_v3.mp4" type="video/mp4"></video>
+            <div class="sim-label">Sauce Bottle in Crate</div>
+          </div>
+          <div class="sim-row">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/rb_take_spoon_out_v3.mp4" type="video/mp4"></video>
+            <div class="sim-label">Take Measuring Spoon Out</div>
+          </div>
+        </div>
+        <p class="figure-caption has-text-centered" style="margin-bottom:1.5rem;">
+          Successful rollouts of the frozen &pi;<sub>0.5</sub> policy guided by retrieved warped DROID
+          trajectories, shown from all three camera views. Longer episodes are sped up for brevity.
+        </p>
+
+
+        <h3 class="title is-4" style="margin-top:2rem;">Sim &rarr; Real: Meta-World demonstrations guide a real Franka</h3>
+        <figure class="paper-figure">
+          <img src="./static/images/metaworld_droid.jpg" alt="Cross-embodiment warping from Meta-World Sawyer to real-world DROID.">
+          <p class="figure-caption">
+            <span class="figtag">Cross-embodiment sim-to-real warping.</span>
+            100 simulated expert trajectories from a Meta-World Sawyer robot (<i>bin-picking-v3</i>) are warped into
+            the physical DROID setup for the multi-stage <i>Banana-to-Plate</i> task across three origin&ndash;destination
+            layouts, exploiting free simulation data for robust real-world adaptation.
+          </p>
+        </figure>
+
+        <div class="warp-pipeline" style="margin-top:1rem;">
+          <div class="warp-head" style="margin-bottom:0.6rem;">
+            <span class="warp-badge">MetaWorld</span> Source demo trajectory
+            <span style="color:#777;font-weight:400;">(Sawyer, simulation)</span>
+          </div>
+          <div class="mw-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+            <div>
+              <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/metaworld/metaworld_trajectory_varied_camera_1.mp4" type="video/mp4"></video>
+              <div class="warp-viewlabel">Camera view 1</div>
+            </div>
+            <div>
+              <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/metaworld/metaworld_trajectory_varied_camera_2.mp4" type="video/mp4"></video>
+              <div class="warp-viewlabel">Camera view 2</div>
+            </div>
+          </div>
+          <div class="warp-down">&darr;</div>
+          <div class="warp-head" style="margin-bottom:0.6rem;">
+            <span class="warp-badge">Warped</span> Warped into the real scene
+            <span style="color:#777;font-weight:400;">(Shelf &rarr; Table layout, camera view 2)</span>
+          </div>
+          <div class="warped-tile" style="max-width:760px;margin:0 auto;">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/metaworld/metaworld_warped_shelf_table_cam2.mp4" type="video/mp4"></video>
+            <span class="src-tag">warped MetaWorld demo</span>
+          </div>
+          <div class="warp-down">&darr;</div>
+          <div class="warp-head" style="margin-bottom:0.6rem;">
+            <span class="warp-badge is-run">Real world</span> Guided rollout &mdash; <i>Put Banana on Plate</i> (success)
+          </div>
+          <div class="warp-run">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/metaworld/real_banana_on_plate_c.mp4" type="video/mp4"></video>
+          </div>
+          <div class="warp-run" style="margin-top:0.6rem;">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/metaworld/real_guided_run_2_c.mp4" type="video/mp4"></video>
+          </div>
+          <div class="warp-run" style="margin-top:0.6rem;">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/metaworld/real_guided_run_3_c.mp4" type="video/mp4"></video>
+          </div>
+          <p class="warp-note">
+            Simulated Sawyer demonstrations from MetaWorld are warped into the real DROID scene (middle: the rainbow
+            curve is the warped end-effector trajectory in the same Shelf &rarr; Table layout as the first rollout,
+            00/01 mark the grasp and release keypoints) and steer the frozen &pi;<sub>0.5</sub> policy to successful
+            real-world executions across different scene layouts.
+            Longer episodes are sped up for brevity.
+          </p>
+        </div>
+
+        <h3 class="title is-4" style="margin-top:2rem;">Cross-morphology: a 7-DoF arm guides a 29-DoF humanoid</h3>
+        <figure class="paper-figure">
+          <img src="./static/images/humanoid_overview.jpg" alt="Franka DROID demonstrations guiding the Fourier GR-1 humanoid.">
+          <p class="figure-caption">
+            <span class="figtag">Franka &rarr; humanoid guidance.</span>
+            End-effector trajectories from the Franka-based DROID dataset guide GR00T-N1.5 policies on the Fourier
+            GR-1 humanoid tabletop tasks &mdash; despite entirely different kinematics, grippers, and camera setups.
+          </p>
+        </figure>
+
+        <h4 class="title is-5" style="margin-top:1.5rem;">Successful GR-1 humanoid rollouts (GR00T-N1.5 + RAGu, zero-shot)</h4>
+        <div style="margin-top:1rem;">
+          <div class="sim-row">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/gr1_cuttingboard_to_pot_mv.mp4" type="video/mp4"></video>
+            <div class="sim-label">Cuttingboard to Pot &mdash; ego-centric view (left), third-person view (right)</div>
+          </div>
+          <div class="sim-row">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/gr1_placemat_to_plate_mv.mp4" type="video/mp4"></video>
+            <div class="sim-label">Placemat to Plate &mdash; ego-centric view (left), third-person view (right)</div>
+          </div>
+          <div class="sim-row">
+            <video autoplay muted loop playsinline preload="metadata"><source src="./static/videos/sim/gr1_plate_to_bowl_mv2.mp4" type="video/mp4"></video>
+            <div class="sim-label">Plate to Bowl &mdash; ego-centric view (left), third-person view (right)</div>
+          </div>
+        </div>
+        <p class="figure-caption has-text-centered">
+          Successful zero-shot rollouts on the 29-DoF Fourier GR-1 humanoid in RoboCasa: the frozen GR00T-N1.5
+          policy is guided by K=3 warped Franka demonstrations from DROID. Shown at 3&times; speed.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= Results -->
+<section class="section" id="results">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">Results</h2>
+
+        <div class="result-cards">
+          <div class="result-card">
+            <div class="num">80%</div>
+            <div class="lab">avg. real-world success (5 tasks)<br>vs. 40% Steering+VLM, 20% &pi;<sub>0.5</sub></div>
+          </div>
+          <div class="result-card">
+            <div class="num">25%</div>
+            <div class="lab">RoboLab avg. with 100 DROID demos<br>vs. 1% RiCL with the same demos</div>
+          </div>
+          <div class="result-card">
+            <div class="num">+11.7</div>
+            <div class="lab">points over &pi;<sub>0.5</sub> on 9 RoboLab tasks<br>by scaling retrieval to 100 trajectories</div>
+          </div>
+          <div class="result-card">
+            <div class="num">+13.6</div>
+            <div class="lab">points on the GR-1 humanoid<br>(GR00T-N1.5: 33.6 &rarr; 47.2, zero-shot)</div>
+          </div>
+        </div>
+
+        <h3 class="title is-4">Real-world evaluation</h3>
+        <figure class="paper-figure">
+          <img src="./static/images/real_robot_barplot.png?v=2" alt="Real-world success rates across five tasks, with error bars.">
+          <p class="figure-caption">
+            <span class="figtag">Real-world success rates (10 rollouts per task).</span>
+            Bars show the mean success rate over 10 rollouts per task and method; the Average column pools all
+            50 rollouts per method. Error bars are &plusmn;1 standard error of the binomial proportion (no whisker
+            is drawn at 0% and 100%, where the standard error is zero).
+            RAGu doubles the inference-time steering baseline (Steering + VLM) and quadruples the base
+            &pi;<sub>0.5</sub> policy on average, reaching 100% on <i>Wipe Table</i> and 90% on
+            <i>Open Drawer</i> and <i>Close Microwave</i>. The retrieval-augmented fine-tuning baseline RiCL
+            fails to complete any task in this setting.
+          </p>
+        </figure>
+
+        <h3 class="title is-4" style="margin-top:2rem;">Simulation evaluation (RoboLab)</h3>
+        <figure class="paper-figure">
+          <div class="table-scroll">
+            <table class="paper-table sim-table">
+              <thead>
+                <tr>
+                  <th class="task">Task</th>
+                  <th>RiCL</th>
+                  <th>&pi;<sub>0.5</sub></th>
+                  <th>GR00T N1.7</th>
+                  <th>Ours</th>
+                  <th>&Delta;</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr><td class="task">BananaInBowl</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="base">4<span class="ci">[0.7, 19.5]</span></td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="best">36<span class="ci">[20.2, 55.5]</span></td><td class="dp best">+32</td></tr>
+              <tr><td class="task">MouseOnKeyboard</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="base">12<span class="ci">[4.2, 30.0]</span></td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="best">24<span class="ci">[11.5, 43.4]</span></td><td class="dp best">+12</td></tr>
+              <tr><td class="task">MustardAboveRaisin</td><td>4<span class="ci">[0.7, 19.5]</span></td><td class="base">0<span class="ci">[0.0, 13.3]</span></td><td>4<span class="ci">[0.7, 19.5]</span></td><td class="best">16<span class="ci">[6.4, 34.7]</span></td><td class="dp best">+16</td></tr>
+              <tr class="mean"><td class="task">Average</td><td>1.3<span class="ci">[0.2, 7.2]</span></td><td class="base">5.3<span class="ci">[2.1, 12.9]</span></td><td>1.3<span class="ci">[0.2, 7.2]</span></td><td class="best">25.3<span class="ci">[16.9, 36.2]</span></td><td class="dp best">+20</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="figure-caption">
+            <span class="figtag">RoboLab evaluation (25 rollouts per task).</span>
+            Success rates (%) with 95% Wilson confidence intervals in brackets, comparing the base VLA policies
+            (&pi;<sub>0.5</sub>, GR00T N1.7) and the retrieval-augmented fine-tuning baseline RiCL with RAGu.
+            Both RiCL and RAGu use the same pool of 100 demonstrations warped from DROID; &Delta; is the absolute
+            improvement over &pi;<sub>0.5</sub>, and the Average row pools all 75 rollouts per method.
+            RAGu (25.3% avg.) substantially outperforms RiCL (1.3%), base &pi;<sub>0.5</sub> (5.3%), and
+            GR00T (1.3%) &mdash; evidence that trajectory-aligned, prior-aware steering is a more context-efficient
+            adaptation mechanism than concatenating demonstrations into the context or updating the VLA&rsquo;s
+            weights.
+          </p>
+        </figure>
+
+        <h3 class="title is-4" style="margin-top:2rem;">Scaling the number of retrieved trajectories (RoboLab)</h3>
+        <figure class="paper-figure">
+          <div class="table-scroll">
+            <table class="paper-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" class="task">Task</th>
+                  <th rowspan="2">GROOT</th>
+                  <th rowspan="2">&pi;<sub>0.5</sub></th>
+                  <th colspan="2">1 traj</th>
+                  <th colspan="2">10 traj</th>
+                  <th colspan="2">30 traj</th>
+                  <th colspan="2">50 traj</th>
+                  <th colspan="2">100 traj</th>
+                </tr>
+                <tr>
+                  <th>SR</th><th>&Delta;</th>
+                  <th>SR</th><th>&Delta;</th>
+                  <th>SR</th><th>&Delta;</th>
+                  <th>SR</th><th>&Delta;</th>
+                  <th>SR</th><th>&Delta;</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr><td class="task">BananaInBowl</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="base">4<span class="ci">[0.7, 19.5]</span></td><td>28<span class="ci">[14.3, 47.6]</span></td><td class="dp">+24</td><td>28<span class="ci">[14.3, 47.6]</span></td><td class="dp">+24</td><td>28<span class="ci">[14.3, 47.6]</span></td><td class="dp">+24</td><td>24<span class="ci">[11.5, 43.4]</span></td><td class="dp">+20</td><td class="best">36<span class="ci">[20.2, 55.5]</span></td><td class="dp best">+32</td></tr>
+              <tr><td class="task">MouseOnKeyboard</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="base">12<span class="ci">[4.2, 30.0]</span></td><td>16<span class="ci">[6.4, 34.7]</span></td><td class="dp">+4</td><td>8<span class="ci">[2.2, 25.0]</span></td><td class="dn">&minus;4</td><td>16<span class="ci">[6.4, 34.7]</span></td><td class="dp">+4</td><td>20<span class="ci">[8.9, 39.1]</span></td><td class="dp">+8</td><td class="best">24<span class="ci">[11.5, 43.4]</span></td><td class="dp best">+12</td></tr>
+              <tr><td class="task">MustardAboveRaisin</td><td>4<span class="ci">[0.7, 19.5]</span></td><td class="base">0<span class="ci">[0.0, 13.3]</span></td><td>8<span class="ci">[2.2, 25.0]</span></td><td class="dp">+8</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="dz">+0</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="dz">+0</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="dz">+0</td><td class="best">16<span class="ci">[6.4, 34.7]</span></td><td class="dp best">+16</td></tr>
+              <tr><td class="task">WoodSpatulaToBowl</td><td>4<span class="ci">[0.7, 19.5]</span></td><td class="base">0<span class="ci">[0.0, 13.3]</span></td><td>4<span class="ci">[0.7, 19.5]</span></td><td class="dp">+4</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="dz">+0</td><td>8<span class="ci">[2.2, 25.0]</span></td><td class="dp">+8</td><td>4<span class="ci">[0.7, 19.5]</span></td><td class="dp">+4</td><td class="best">12<span class="ci">[4.2, 30.0]</span></td><td class="dp best">+12</td></tr>
+              <tr><td class="task">RubiksCubeOrBanana</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="base">44<span class="ci">[26.7, 62.9]</span></td><td>52<span class="ci">[33.5, 70.0]</span></td><td class="dp">+8</td><td>47<span class="ci">[29.2, 65.6]</span></td><td class="dp">+3</td><td>52<span class="ci">[33.5, 70.0]</span></td><td class="dp">+8</td><td>56<span class="ci">[37.1, 73.3]</span></td><td class="dp">+12</td><td class="best">68<span class="ci">[48.4, 82.8]</span></td><td class="dp best">+24</td></tr>
+              <tr><td class="task">SauceBottlesCrate</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="base">4<span class="ci">[0.7, 19.5]</span></td><td>12<span class="ci">[4.2, 30.0]</span></td><td class="dp">+8</td><td>16<span class="ci">[6.4, 34.7]</span></td><td class="dp">+12</td><td>9<span class="ci">[2.7, 26.2]</span></td><td class="dp">+5</td><td class="best">24<span class="ci">[11.5, 43.4]</span></td><td class="dp best">+20</td><td>12<span class="ci">[4.2, 30.0]</span></td><td class="dp">+8</td></tr>
+              <tr><td class="task">TakeMeasuringSpoonOut</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="base">36<span class="ci">[20.2, 55.5]</span></td><td>32<span class="ci">[17.2, 51.6]</span></td><td class="dn">&minus;4</td><td class="best">44<span class="ci">[26.7, 62.9]</span></td><td class="dp best">+8</td><td>32<span class="ci">[17.2, 51.6]</span></td><td class="dn">&minus;4</td><td>36<span class="ci">[20.2, 55.5]</span></td><td class="dz">+0</td><td>36<span class="ci">[20.2, 55.5]</span></td><td class="dz">+0</td></tr>
+              <tr><td class="task">RubiksCube</td><td>0<span class="ci">[0.0, 13.3]</span></td><td class="base">52<span class="ci">[33.5, 70.0]</span></td><td>20<span class="ci">[8.9, 39.1]</span></td><td class="dn">&minus;32</td><td class="best">68<span class="ci">[48.4, 82.8]</span></td><td class="dp best">+16</td><td>64<span class="ci">[44.5, 79.8]</span></td><td class="dp">+12</td><td>64<span class="ci">[44.5, 79.8]</span></td><td class="dp">+12</td><td>65<span class="ci">[45.5, 80.5]</span></td><td class="dp">+13</td></tr>
+              <tr><td class="task">ToyInBin</td><td>28<span class="ci">[14.3, 47.6]</span></td><td class="base">60<span class="ci">[40.7, 76.6]</span></td><td class="best">84<span class="ci">[65.3, 93.6]</span></td><td class="dp best">+24</td><td>75<span class="ci">[55.5, 87.8]</span></td><td class="dp">+15</td><td>64<span class="ci">[44.5, 79.8]</span></td><td class="dp">+4</td><td>64<span class="ci">[44.5, 79.8]</span></td><td class="dp">+4</td><td>60<span class="ci">[40.7, 76.6]</span></td><td class="dz">+0</td></tr>
+              <tr class="mean"><td class="task">Mean</td><td>3.6<span class="ci">[1.8, 6.9]</span></td><td class="base">22.8<span class="ci">[17.8, 28.7]</span></td><td>26.4<span class="ci">[21.1, 32.5]</span></td><td class="dp">+3.6</td><td>29.5<span class="ci">[23.9, 35.8]</span></td><td class="dp">+6.7</td><td>28.1<span class="ci">[22.6, 34.3]</span></td><td class="dp">+5.3</td><td>29.6<span class="ci">[24.0, 35.9]</span></td><td class="dp">+6.8</td><td class="best">34.5<span class="ci">[28.6, 40.9]</span></td><td class="dp best">+11.7</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="figure-caption">
+            <span class="figtag">Evaluation on RoboLab tasks with different numbers of trajectories.</span>
+            Task-wise success rates (%, 25 rollouts per task) with 95% Wilson confidence intervals in brackets,
+            across GROOT, &pi;<sub>0.5</sub>, and &pi;<sub>0.5</sub> + RAGu guided by 1, 10, 30, 50, or 100 warped
+            DROID demonstrations. Each &Delta; column shows the absolute improvement over &pi;<sub>0.5</sub>; the
+            best setting per task is in bold; the Mean row pools all 225 rollouts of each column.
+            Scaling the number of trajectories significantly enhances policy robustness, with the mean success rate
+            increasing from 22.8% (&pi;<sub>0.5</sub>) to a peak of 34.5% when utilizing 100 demonstrations. The
+            largest gains appear on tasks requiring precise spatial alignment (<i>BananaInBowl</i> +32,
+            <i>RubiksCubeOrBanana</i> +24). Performance is not strictly monotonic at intermediate pool sizes, but the
+            100-demo setting is the most robust overall.
+          </p>
+        </figure>
+
+        <h3 class="title is-4" style="margin-top:2rem;">Trajectory quality (RoboLab)</h3>
+        <figure class="paper-figure">
+          <div class="table-scroll">
+            <table class="paper-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" class="task">Task</th>
+                  <th colspan="3" class="grp">&pi;<sub>0.5</sub></th>
+                  <th colspan="3" class="grp">&pi;<sub>0.5</sub> + Ours (1 traj)</th>
+                  <th colspan="3">&pi;<sub>0.5</sub> + Ours (100 traj)</th>
+                </tr>
+                <tr>
+                  <th>SPARC</th><th>Path (m)</th><th class="grp">Speed (cm/s)</th>
+                  <th>SPARC</th><th>Path (m)</th><th class="grp">Speed (cm/s)</th>
+                  <th>SPARC</th><th>Path (m)</th><th>Speed (cm/s)</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr><td class="task">BananaInBowl</td><td>&minus;9.40</td><td>4.14</td><td class="grp">7.4</td><td>&minus;8.62</td><td>3.63</td><td class="grp">7.3</td><td>&minus;10.34</td><td>6.06</td><td>7.3</td></tr>
+              <tr><td class="task">MouseOnKeyboard</td><td>&minus;10.51</td><td>6.17</td><td class="grp">9.6</td><td>&minus;10.71</td><td>5.33</td><td class="grp">8.8</td><td>&minus;11.35</td><td>5.46</td><td>8.4</td></tr>
+              <tr><td class="task">MustardAboveRaisin</td><td>&minus;8.55</td><td>4.72</td><td class="grp">11.1</td><td>&minus;10.47</td><td>4.86</td><td class="grp">8.5</td><td>&minus;9.21</td><td>5.49</td><td>9.4</td></tr>
+              <tr><td class="task">WoodSpatulaToBowl</td><td>&minus;9.87</td><td>8.21</td><td class="grp">12.6</td><td>&minus;9.85</td><td>7.88</td><td class="grp">11.8</td><td>&minus;9.73</td><td>7.51</td><td>11.5</td></tr>
+              <tr><td class="task">RubiksCubeOrBanana</td><td>&minus;7.01</td><td>2.21</td><td class="grp">7.9</td><td>&minus;6.97</td><td>2.09</td><td class="grp">7.9</td><td>&minus;6.40</td><td>1.79</td><td>8.0</td></tr>
+              <tr><td class="task">SauceBottlesCrate</td><td>&minus;8.72</td><td>3.94</td><td class="grp">8.4</td><td>&minus;8.21</td><td>3.46</td><td class="grp">8.4</td><td>&minus;9.26</td><td>4.07</td><td>8.7</td></tr>
+              <tr><td class="task">TakeMeasuringSpoonOut</td><td>&minus;9.86</td><td>5.57</td><td class="grp">8.8</td><td>&minus;10.81</td><td>6.98</td><td class="grp">8.0</td><td>&minus;10.11</td><td>6.00</td><td>8.3</td></tr>
+              <tr><td class="task">RubiksCube</td><td>&minus;10.62</td><td>8.46</td><td class="grp">8.4</td><td>&minus;8.68</td><td>3.19</td><td class="grp">8.2</td><td>&minus;11.16</td><td>8.34</td><td>8.7</td></tr>
+              <tr><td class="task">ToyInBin</td><td>&minus;9.76</td><td>9.95</td><td class="grp">10.1</td><td>&minus;9.81</td><td>10.87</td><td class="grp">9.1</td><td>&minus;6.31</td><td>2.57</td><td>9.7</td></tr>
+              <tr class="mean"><td class="task">Average</td><td>&minus;9.37</td><td>5.93</td><td class="grp">9.37</td><td>&minus;9.35</td><td>5.37</td><td class="grp">8.67</td><td>&minus;9.32</td><td>5.25</td><td>8.89</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="figure-caption">
+            <span class="figtag">Trajectory metrics across RoboLab tasks for &pi;<sub>0.5</sub>, Ours with 1 trajectory, and with 100 trajectories.</span>
+            EE SPARC is unitless; Path is measured in meters; Speed is measured in cm/s. Higher EE SPARC indicates
+            smoother motion. Averaged across the nine tasks, RAGu with 100 trajectories produces the smoothest motions
+            (EE SPARC &minus;9.32), the shortest average end-effector path (5.25&nbsp;m vs. 5.93&nbsp;m for
+            &pi;<sub>0.5</sub>), and comparable speed (8.89&nbsp;cm/s), indicating that larger retrieval sets improve
+            efficiency through smoother, more direct motion rather than more aggressive execution.
+          </p>
+        </figure>
+
+        <h3 class="title is-4" style="margin-top:2rem;">Cross-morphology evaluation (GR-1 humanoid, RoboCasa)</h3>
+        <figure class="paper-figure">
+          <div class="table-scroll">
+            <table class="paper-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" class="task">Task</th>
+                  <th colspan="5" class="grp">GR00T-N1.5 (w/o FT)</th>
+                  <th colspan="5">GR00T-N1.5 (w/ FT)</th>
+                </tr>
+                <tr>
+                  <th>Base</th><th>Ours (1 traj)</th><th>&Delta;</th><th>Ours (100 traj)</th><th class="grp">&Delta;</th>
+                  <th>Base</th><th>Ours (1 traj)</th><th>&Delta;</th><th>Ours (100 traj)</th><th>&Delta;</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr><td class="task">CuttingboardToPot</td><td class="base">4<span class="ci">[0.7, 19.5]</span></td><td>12<span class="ci">[4.2, 30.0]</span></td><td class="dp">+8</td><td>12<span class="ci">[4.2, 30.0]</span></td><td class="dp grp">+8</td><td class="base">4<span class="ci">[0.7, 19.5]</span></td><td>8<span class="ci">[2.2, 25.0]</span></td><td class="dp">+4</td><td>8<span class="ci">[2.2, 25.0]</span></td><td class="dp">+4</td></tr>
+              <tr><td class="task">PlacematToPlate</td><td class="base">48<span class="ci">[30.0, 66.5]</span></td><td>60<span class="ci">[40.7, 76.6]</span></td><td class="dp">+12</td><td>72<span class="ci">[52.4, 85.7]</span></td><td class="dp grp">+24</td><td class="base">48<span class="ci">[30.0, 66.5]</span></td><td>72<span class="ci">[52.4, 85.7]</span></td><td class="dp">+24</td><td>72<span class="ci">[52.4, 85.7]</span></td><td class="dp">+24</td></tr>
+              <tr><td class="task">PlateToBowl</td><td class="base">44<span class="ci">[26.7, 62.9]</span></td><td>44<span class="ci">[26.7, 62.9]</span></td><td class="dz">+0</td><td>56<span class="ci">[37.1, 73.3]</span></td><td class="dp grp">+12</td><td class="base">68<span class="ci">[48.4, 82.8]</span></td><td>72<span class="ci">[52.4, 85.7]</span></td><td class="dp">+4</td><td>80<span class="ci">[60.9, 91.1]</span></td><td class="dp">+12</td></tr>
+              <tr><td class="task">PlateToPlate</td><td class="base">56<span class="ci">[37.1, 73.3]</span></td><td>44<span class="ci">[26.7, 62.9]</span></td><td class="dn">&minus;12</td><td>60<span class="ci">[40.7, 76.6]</span></td><td class="dp grp">+4</td><td class="base">20<span class="ci">[8.9, 39.1]</span></td><td>40<span class="ci">[23.4, 59.3]</span></td><td class="dp">+20</td><td>36<span class="ci">[20.2, 55.5]</span></td><td class="dp">+16</td></tr>
+              <tr><td class="task">TrayToPlate</td><td class="base">16<span class="ci">[6.4, 34.7]</span></td><td>36<span class="ci">[20.2, 55.5]</span></td><td class="dp">+20</td><td>36<span class="ci">[20.2, 55.5]</span></td><td class="dp grp">+20</td><td class="base">44<span class="ci">[26.7, 62.9]</span></td><td>40<span class="ci">[23.4, 59.3]</span></td><td class="dn">&minus;4</td><td>48<span class="ci">[30.0, 66.5]</span></td><td class="dp">+4</td></tr>
+              <tr class="mean"><td class="task">Average</td><td class="base">33.6<span class="ci">[25.9, 42.3]</span></td><td>39.2<span class="ci">[31.1, 48.0]</span></td><td class="dp">+5.6</td><td>47.2<span class="ci">[38.7, 55.9]</span></td><td class="dp grp">+13.6</td><td class="base">36.8<span class="ci">[28.9, 45.5]</span></td><td>46.4<span class="ci">[37.9, 55.1]</span></td><td class="dp">+9.6</td><td>48.8<span class="ci">[40.2, 57.5]</span></td><td class="dp">+12</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="figure-caption">
+            <span class="figtag">Cross-embodiment humanoid manipulation with in-context trajectory guidance.</span>
+            Success rates (%, 25 rollouts per task) with 95% Wilson confidence intervals in brackets, on five
+            RoboCasa tabletop tasks for the 29-DoF Fourier GR-1 humanoid, using the base GR00T-N1.5 model and
+            NVIDIA&rsquo;s task-specific fine-tuned variant, each guided by 1 or 100 DROID (Franka) demonstrations
+            warped into the humanoid&rsquo;s workspace. The &Delta; columns indicate absolute improvement over the
+            corresponding unguided baseline; the Average row pools all 125 rollouts of each column. Retrieval
+            guidance improves both checkpoints, from 33.6 to 47.2 average success without fine-tuning and from
+            36.8 to 48.8 with fine-tuning, and in both configurations the 100-trajectory interval lies entirely
+            above the base-policy point estimate. Base-model robustness raises the ceiling while remaining
+            complementary to retrieval-based guidance.
+          </p>
+        </figure>
+
+        <div class="content has-text-justified" style="margin-top:1.5rem;">
+          <h3 class="title is-4">Key findings</h3>
+          <ul>
+            <li><b>Scaling retrieval helps.</b> On nine RoboLab tasks, mean success grows from 22.8%
+              (&pi;<sub>0.5</sub>) to 34.5% with 100 warped demos &mdash; large gains on tasks needing precise
+              object-relative positioning (<i>BananaInBowl</i> +32, <i>RubiksCubeOrBanana</i> +24). Broad trajectory
+              coverage acts as a dense structural prior rather than a template to copy.</li>
+            <li><b>Sim-to-real transfer survives multi-stage tasks.</b> In the <i>Banana-to-Plate</i> task,
+              RAGu guided by warped Meta-World trajectories reaches 60&ndash;70% final-stage completion across all
+              three layouts. The gain is largest in Cabinet&rarr;Shelf, where both &pi;<sub>0.5</sub> and Steering+VLM
+              fail completely (0%) while RAGu reaches 60%; in Shelf&rarr;Table and Table&rarr;Shelf the steering
+              baseline already performs well, and the smaller gains there are directional rather than statistically
+              conclusive.</li>
+            <li><b>Cross-morphology guidance works.</b> Warped DROID (Franka) demos improve GR00T-N1.5 on the
+              29-DoF Fourier GR-1 humanoid from 33.6 to 47.2 average success without fine-tuning, and from 36.8 to
+              48.8 with fine-tuning.</li>
+            <li><b>Guided trajectories are also more efficient.</b> With 100 demos, RAGu produces the smoothest
+              motions (best EE-SPARC) and the shortest average end-effector paths (5.25&nbsp;m vs. 5.93&nbsp;m for
+              &pi;<sub>0.5</sub>) at comparable speed &mdash; the gains come from more direct motion, not from
+              moving faster.</li>
+          </ul>
+        </div>
+
+        <div class="ci-note has-text-justified">
+          <p>
+            <b>How the confidence intervals are computed.</b> Every success rate is a binomial proportion
+            <i>p&#770;</i> = <i>k</i>/<i>n</i>, with <i>k</i> successful rollouts out of <i>n</i> = 25 per simulated
+            task (10 per real-world task). The tables above report each rate together with its 95% Wilson score
+            interval in brackets,
+            <span class="formula">(<i>p&#770;</i> + <i>z</i><sup>2</sup>/2<i>n</i>) / (1 + <i>z</i><sup>2</sup>/<i>n</i>)
+            &plusmn; <i>z</i>&thinsp;&radic;(<i>p&#770;</i>(1&thinsp;&minus;&thinsp;<i>p&#770;</i>)/<i>n</i> +
+            <i>z</i><sup>2</sup>/4<i>n</i><sup>2</sup>) / (1 + <i>z</i><sup>2</sup>/<i>n</i>)</span>
+            with <i>z</i> = 1.96. Mean and Average rows pool every rollout of that column (e.g., 9 tasks &times; 25
+            = 225 rollouts), so their intervals are narrower than the per-task ones. We use the Wilson interval
+            rather than the normal (Wald) approximation
+            <span class="formula"><i>p&#770;</i> &plusmn; 1.96&thinsp;&radic;(<i>p&#770;</i>(1&thinsp;&minus;&thinsp;<i>p&#770;</i>)/<i>n</i>)</span>
+            because it stays inside [0, 100]% and remains informative at 0% and 100% with small <i>n</i>
+            (a 0% cell with <i>n</i> = 25 has the interval [0, 13.3]%). The error bars in the real-world bar plot
+            show &plusmn;1 standard error, <span class="formula">&radic;(<i>p&#770;</i>(1&thinsp;&minus;&thinsp;<i>p&#770;</i>)/<i>n</i>)</span>,
+            roughly half the width of a 95% interval. Intervals are given for success rates only, not for the
+            &Delta; columns or the trajectory-quality metrics.
+          </p>
+        </div>
+
+        <h3 class="title is-4" style="margin-top:2rem;">Systematic generalization on the real robot (STAR-Gen)</h3>
+        <div class="content has-text-justified">
+          <p>
+            <b>Evaluation protocol.</b> We evaluate real-robot generalization using STAR-Gen, which constructs
+            controlled task variations from a base task along four axes: <i>visual-task</i> changes,
+            <i>object-pose</i> changes, <i>action-verb</i> changes, and <i>new-object</i> changes. Each task includes
+            the original setup and four generated variants. For each task&ndash;variant pair, we conduct one trial per
+            method using the same initial scene configuration and language instruction. Rather than reporting only
+            binary success, we assign a <b>task-progress score from 0 to 100</b>, following sequential and visually
+            verifiable task milestones. This protocol lets us distinguish failures to <i>approach</i>,
+            <i>interact with</i>, and <i>complete</i> the task.
+          </p>
+        </div>
+        <figure class="paper-figure">
+          <img src="./static/images/stargen_table.png" alt="Per-trial task progress of RAGu and baselines across STAR-Gen generalization axes on the real Franka.">
+          <p class="figure-caption">
+            <span class="figtag">Per-trial task progress across STAR-Gen perturbations.</span>
+            Columns are the STAR-Gen generalization axes (original task, visual-task changes, a new object, shifted
+            object poses, and rephrased action verbs); rows are the pick-and-place and articulated-object base tasks on
+            the real Franka. Above each initial scene, a bar runs from white (0) to black (100) task progress and a
+            triangle marks the score each method reached on that trial: Ours (red), &pi;<sub>0.5</sub> (blue),
+            Steering + VLM (teal), and RiCL (gray). RAGu stays near the high end on every axis, while the baselines
+            mostly stall at the approach or grasp milestones.
+          </p>
+        </figure>
+
+        <h4 class="title is-5" style="margin-top:1.5rem;">Task-progress criteria</h4>
+        <div class="table-scroll">
+          <table class="paper-table progress-table">
+            <thead>
+              <tr>
+                <th class="score">Score</th>
+                <th>Pick-and-place tasks<br><span class="th-sub">approach &rarr; grasp &rarr; transport &rarr; place</span></th>
+                <th>Articulated-object tasks (drawers, cabinets)<br><span class="th-sub">approach &rarr; handle interaction &rarr; opening completion</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="score">0</td>
+                <td>No task-directed motion toward the object.</td>
+                <td>No task-directed motion.</td>
+              </tr>
+              <tr>
+                <td class="score">25</td>
+                <td>Reaches or touches the object but does not securely grasp it.</td>
+                <td>Reaches the drawer or cabinet and contacts its front, door, or an incorrect part.</td>
+              </tr>
+              <tr>
+                <td class="score">50</td>
+                <td>Successful grasp, evidenced by the object moving with the gripper.</td>
+                <td>Contacts or grasps the correct handle without a meaningful opening motion.</td>
+              </tr>
+              <tr>
+                <td class="score">75</td>
+                <td>Transports the object toward the target but fails to release it correctly or leaves it short of the target.</td>
+                <td>Partially opens the drawer or door but releases it, stalls, uses an incorrect interaction, or does not open it fully.</td>
+              </tr>
+              <tr class="full">
+                <td class="score">100</td>
+                <td>Object is stably placed on the target plate and released.</td>
+                <td>The specified drawer or cabinet door is fully opened through the instructed interaction.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="figure-caption">
+          <span class="figtag">Scoring.</span>
+          The final score reflects the furthest milestone reached in a single trial, providing credit for meaningful
+          partial progress while reserving full credit for complete and correct task execution.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= Rollout videos -->
+<section class="section is-light" id="rollouts">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Real-Robot Rollouts</h2>
+        <div class="content has-text-justified">
+          <p>
+            Real-robot rollouts across five manipulation tasks.
+            All 200 episodes (4 methods, 5 tasks, 10 episodes each) with action histories are uploaded to the
+            referenced <a href="https://huggingface.co/datasets/raguvla/real-world-evaluation" target="_blank" rel="noopener">dataset</a>
+            &mdash; except one success episode of the Steering + VLM baseline
+            on the Towel on Plate task, whose video was accidentally not saved.
+            For each task we show
+            representative <span style="color:#1a9850;font-weight:600;">success</span> and
+            <span style="color:#d73027;font-weight:600;">failure</span> episodes for our method
+            (<b>Ours</b>) and two baselines (<b>Steering + VLM</b>, <b>RiCL</b>).
+          </p>
+          <p>
+            <b>Each clip shows the first camera viewpoint (left) and the wrist camera (right), the only two
+            views used by the policy.</b> Select a task and a method below to view its episodes.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="columns is-centered">
+      <div class="column is-full">
+
+        <div class="tabs is-centered is-boxed rr-task-tabs">
+          <ul>
+            <li class="is-active" data-rr-task="rr-open-red-cabinet"><a><span>Open Red Cabinet</span></a></li>
+            <li data-rr-task="rr-open-upper-drawer"><a><span>Open Upper Drawer</span></a></li>
+            <li data-rr-task="rr-close-microwave"><a><span>Close Microwave</span></a></li>
+            <li data-rr-task="rr-towel-on-plate"><a><span>Towel on Plate</span></a></li>
+            <li data-rr-task="rr-wipe-table"><a><span>Wipe Table</span></a></li>
+          </ul>
+        </div>
+
+        <!-- Open Red Cabinet -->
+        <div class="rr-task-panel is-active" id="rr-open-red-cabinet">
+          <div class="tabs is-centered is-small is-toggle is-rounded rr-method-tabs">
+            <ul>
+              <li class="is-active" data-rr-method="rr-open-red-cabinet-ours"><a><span>Ours</span></a></li>
+              <li data-rr-method="rr-open-red-cabinet-steering-vlm"><a><span>Steering + VLM</span></a></li>
+              <li data-rr-method="rr-open-red-cabinet-ricl"><a><span>RiCL</span></a></li>
+            </ul>
+          </div>
+          <div class="rr-method-panel is-active" id="rr-open-red-cabinet-ours">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <video autoplay controls muted loop playsinline preload="metadata"><source src="./static/videos/open_red_cabinet_ours_success.mp4?v=2" type="video/mp4"></video></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video autoplay controls muted loop playsinline preload="metadata"><source src="./static/videos/open_red_cabinet_ours_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+          <div class="rr-method-panel" id="rr-open-red-cabinet-steering-vlm">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/open_red_cabinet_steering_vlm_success.mp4?v=2" type="video/mp4"></video></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/open_red_cabinet_steering_vlm_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+          <div class="rr-method-panel" id="rr-open-red-cabinet-ricl">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <div class="rr-na">N/A</div></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/open_red_cabinet_ricl_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Open Upper Drawer -->
+        <div class="rr-task-panel" id="rr-open-upper-drawer">
+          <div class="tabs is-centered is-small is-toggle is-rounded rr-method-tabs">
+            <ul>
+              <li class="is-active" data-rr-method="rr-open-upper-drawer-ours"><a><span>Ours</span></a></li>
+              <li data-rr-method="rr-open-upper-drawer-steering-vlm"><a><span>Steering + VLM</span></a></li>
+              <li data-rr-method="rr-open-upper-drawer-ricl"><a><span>RiCL</span></a></li>
+            </ul>
+          </div>
+          <div class="rr-method-panel is-active" id="rr-open-upper-drawer-ours">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/open_upper_drawer_ours_success.mp4?v=2" type="video/mp4"></video></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/open_upper_drawer_ours_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+          <div class="rr-method-panel" id="rr-open-upper-drawer-steering-vlm">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/open_upper_drawer_steering_vlm_success.mp4?v=2" type="video/mp4"></video></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/open_upper_drawer_steering_vlm_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+          <div class="rr-method-panel" id="rr-open-upper-drawer-ricl">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <div class="rr-na">N/A</div></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/open_upper_drawer_ricl_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Close Microwave -->
+        <div class="rr-task-panel" id="rr-close-microwave">
+          <div class="tabs is-centered is-small is-toggle is-rounded rr-method-tabs">
+            <ul>
+              <li class="is-active" data-rr-method="rr-close-microwave-ours"><a><span>Ours</span></a></li>
+              <li data-rr-method="rr-close-microwave-steering-vlm"><a><span>Steering + VLM</span></a></li>
+              <li data-rr-method="rr-close-microwave-ricl"><a><span>RiCL</span></a></li>
+            </ul>
+          </div>
+          <div class="rr-method-panel is-active" id="rr-close-microwave-ours">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/close_microwave_ours_success.mp4?v=2" type="video/mp4"></video></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/close_microwave_ours_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+          <div class="rr-method-panel" id="rr-close-microwave-steering-vlm">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/close_microwave_steering_vlm_success.mp4?v=2" type="video/mp4"></video></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/close_microwave_steering_vlm_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+          <div class="rr-method-panel" id="rr-close-microwave-ricl">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <div class="rr-na">N/A</div></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/close_microwave_ricl_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Towel on Plate -->
+        <div class="rr-task-panel" id="rr-towel-on-plate">
+          <div class="tabs is-centered is-small is-toggle is-rounded rr-method-tabs">
+            <ul>
+              <li class="is-active" data-rr-method="rr-towel-on-plate-ours"><a><span>Ours</span></a></li>
+              <li data-rr-method="rr-towel-on-plate-steering-vlm"><a><span>Steering + VLM</span></a></li>
+              <li data-rr-method="rr-towel-on-plate-ricl"><a><span>RiCL</span></a></li>
+            </ul>
+          </div>
+          <div class="rr-method-panel is-active" id="rr-towel-on-plate-ours">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/towel_on_plate_ours_success.mp4?v=2" type="video/mp4"></video></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/towel_on_plate_ours_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+          <div class="rr-method-panel" id="rr-towel-on-plate-steering-vlm">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/towel_on_plate_steering_vlm_success.mp4?v=2" type="video/mp4"></video></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/towel_on_plate_steering_vlm_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+          <div class="rr-method-panel" id="rr-towel-on-plate-ricl">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <div class="rr-na">N/A</div></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/towel_on_plate_ricl_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wipe Table -->
+        <div class="rr-task-panel" id="rr-wipe-table">
+          <div class="tabs is-centered is-small is-toggle is-rounded rr-method-tabs">
+            <ul>
+              <li class="is-active" data-rr-method="rr-wipe-table-ours"><a><span>Ours</span></a></li>
+              <li data-rr-method="rr-wipe-table-steering-vlm"><a><span>Steering + VLM</span></a></li>
+              <li data-rr-method="rr-wipe-table-ricl"><a><span>RiCL</span></a></li>
+            </ul>
+          </div>
+          <div class="rr-method-panel is-active" id="rr-wipe-table-ours">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/wipe_table_ours_success.mp4?v=2" type="video/mp4"></video></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <div class="rr-na">N/A</div></div>
+            </div>
+          </div>
+          <div class="rr-method-panel" id="rr-wipe-table-steering-vlm">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/wipe_table_steering_vlm_success.mp4?v=2" type="video/mp4"></video></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/wipe_table_steering_vlm_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+          <div class="rr-method-panel" id="rr-wipe-table-ricl">
+            <div class="rr-pair">
+              <div class="rr-clip"><span class="rr-label rr-success">Success</span>
+                <div class="rr-na">N/A</div></div>
+              <div class="rr-clip"><span class="rr-label rr-fail">Failure</span>
+                <video controls muted loop playsinline preload="none"><source src="./static/videos/wipe_table_ricl_fail.mp4?v=2" type="video/mp4"></video></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var root = document.getElementById('rollouts');
+      if (!root) { return; }
+      function playPanel(panel) {
+        if (!panel) { return; }
+        panel.querySelectorAll('video').forEach(function (v) {
+          v.preload = 'auto';
+          var p = v.play();
+          if (p && p.catch) { p.catch(function () {}); }
+        });
+      }
+      function pausePanel(panel) {
+        if (!panel) { return; }
+        panel.querySelectorAll('video').forEach(function (v) { v.pause(); });
+      }
+      function selectTab(scope, tab, tabSel, panelSel, targetId) {
+        scope.querySelectorAll(tabSel).forEach(function (t) { t.classList.toggle('is-active', t === tab); });
+        scope.querySelectorAll(panelSel).forEach(function (panel) {
+          var on = panel.id === targetId;
+          panel.classList.toggle('is-active', on);
+          if (on) {
+            playPanel(panel.classList.contains('rr-method-panel') ? panel : panel.querySelector('.rr-method-panel.is-active'));
+          } else {
+            pausePanel(panel);
+          }
+        });
+      }
+      root.querySelectorAll('.rr-task-tabs li').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          selectTab(root, tab, '.rr-task-tabs li', '.rr-task-panel', tab.dataset.rrTask);
+        });
+      });
+      root.querySelectorAll('.rr-method-tabs li').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          var taskPanel = tab.closest('.rr-task-panel');
+          selectTab(taskPanel, tab, '.rr-method-tabs li', '.rr-method-panel', tab.dataset.rrMethod);
+        });
+      });
+    })();
+  </script>
+</section>
+
+<!-- ======================================================= Conclusion -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Conclusion</h2>
+        <div class="content has-text-justified">
+          <p>
+            RAGu is a zero-shot, training-free framework that adapts pretrained VLAs to out-of-distribution
+            environments by semantically warping cross-domain trajectories into the target geometric space and
+            using them as energy fields that guide the flow-matching denoising process. It bridges embodiment and
+            sim-to-real gaps &mdash; enabling a Franka manipulator to execute complex multi-stage tasks from
+            simulated Sawyer demonstrations &mdash; and scaling the retrieval pool to 100 trajectories
+            significantly improves robustness. <b>Limitations:</b> RAGu relies on visual semantic correspondences
+            and is therefore sensitive to camera placement and occlusion; severe occlusions, including
+            self-occlusion by the robot, can degrade 3D warping and inject noise into the guidance. Future work
+            will incorporate more robust multi-view 3D representations. Overall, RAGu offers a scalable and
+            computationally efficient path to deploy foundation robot models in the wild without costly fine-tuning.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <p>
+        <b>Zero-Shot VLA Adaptation with Retrieved Guidance</b> &mdash; Anonymous Authors, under review at CoRL 2026.
+      </p>
+      <p>
+        Website adapted from the <a href="https://nerfies.github.io">Nerfies project page</a> template.
+      </p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

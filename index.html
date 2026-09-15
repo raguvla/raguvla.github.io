@@ -1092,6 +1092,56 @@
           </p>
         </figure>
 
+        <h3 class="title is-4" style="margin-top:2rem;" id="selection-ablation">Secondary Retrieval ablation: candidate selection rule (RoboLab)</h3>
+        <figure class="paper-figure">
+          <div class="table-scroll">
+            <table class="paper-table sim-table">
+              <thead>
+                <tr>
+                  <th class="task">Selection rule</th>
+                  <th>EE SPARC &uarr;</th>
+                  <th>Path (m) &darr;</th>
+                  <th>Speed (cm/s)</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr><td class="task">RAGu (1 reference traj)</td><td class="best">&minus;9.93</td><td class="best">4.61</td><td>8.20</td></tr>
+              <tr><td class="task">RAGu (min dist)</td><td>&minus;11.74</td><td>5.79</td><td>7.09</td></tr>
+              <tr><td class="task">RAGu (min grad, default)</td><td>&minus;10.30</td><td>5.67</td><td class="best">8.37</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="figure-caption">
+            <span class="figtag">Ablation of Secondary Retrieval: candidate selection rule (Table IV in the paper).</span>
+            Trajectory metrics averaged over the three RoboLab tasks of the RoboLab evaluation table above
+            (<i>BananaInBowl</i>, <i>MouseOnKeyboard</i>, <i>MustardAboveRaisin</i>; 25 rollouts per task, 75 in
+            total), with the same pool of 100 warped DROID demonstrations, the same top-<i>N</i> candidates, and the
+            same guidance scale &gamma;; only the rule that picks the guiding trajectory changes.
+            <i>1 reference traj</i> uses only the Primary Retrieval reference, i.e., the DTW top-1 candidate, with no
+            inference-time selection; <i>min dist</i> selects arg&thinsp;min<sub><i>i</i></sub>
+            <i>C<sub>i</sub></i>(<i>X<sub>t</sub></i>) (Eq.&nbsp;3 in the paper), i.e., standard nearest-neighbor
+            retrieval in trajectory space; <i>min grad</i> selects arg&thinsp;min<sub><i>i</i></sub>
+            &#8214;&nabla;<sub><i>A</i><sub>0</sub></sub><i>C<sub>i</sub></i>(<i>X<sub>t</sub></i>)&#8214;<sub>2</sub>
+            (Eq.&nbsp;4, the RAGu default). EE SPARC is unitless and higher is smoother; Path is the end-effector
+            path length; Speed is the mean end-effector speed, reported for reference. Bold marks the best value per
+            column. The <i>1 reference traj</i> and <i>min grad</i> rows are the three-task averages of the
+            1-trajectory and 100-trajectory columns of the trajectory-quality table above.
+            Replacing gradient-norm selection with nearest-neighbor selection (<i>min dist</i>) yields markedly less
+            smooth (EE SPARC &minus;11.74 vs. &minus;10.30) and slower (7.09 vs. 8.37&nbsp;cm/s) motion at nearly the
+            same path length (5.79 vs. 5.67&nbsp;m): the geometrically nearest candidate is not necessarily one the
+            policy can follow, and the policy repeatedly corrects toward it. A small gradient norm could in principle
+            also arise from low kinematic sensitivity rather than proximity; the smoother and faster execution at
+            equal path length is, however, exactly the behavior the criterion is designed to produce, since it prefers
+            references that require the least change to the VLA&rsquo;s current dynamics.
+            The single curated reference gives the smoothest and shortest paths but the lowest success on these
+            tasks, 17.3% [10.4, 27.4] vs. 25.3% [16.9, 36.2] for <i>min grad</i> (95% Wilson intervals over the
+            75 pooled rollouts; per-task rates in the RoboLab evaluation and scaling tables above), because one
+            trajectory cannot cover the scene variation that the pool covers; <i>min grad</i> retains the success gain
+            of the pool while recovering most of the smoothness lost by pooling. As elsewhere on this page, intervals
+            are reported for success rates only; the trajectory metrics are rollout averages without intervals.
+          </p>
+        </figure>
+
         <h3 class="title is-4" style="margin-top:2rem;">Cross-morphology evaluation (GR-1 humanoid, RoboCasa)</h3>
         <figure class="paper-figure">
           <div class="table-scroll">
@@ -1151,6 +1201,13 @@
               motions (best EE-SPARC) and the shortest average end-effector paths (5.25&nbsp;m vs. 5.93&nbsp;m for
               &pi;<sub>0.5</sub>) at comparable speed &mdash; the gains come from more direct motion, not from
               moving faster.</li>
+            <li><b>Gradient-norm selection beats nearest-neighbor selection.</b> With the demonstration pool,
+              the top-<i>N</i> candidates and &gamma; held fixed on three RoboLab tasks, picking the guiding
+              trajectory by nearest neighbor (<i>min dist</i>) gives less smooth (EE SPARC &minus;11.74 vs.
+              &minus;10.30) and slower (7.09 vs. 8.37&nbsp;cm/s) motion than RAGu&rsquo;s gradient-norm rule
+              (<i>min grad</i>) at nearly the same path length. A single curated reference is smoother still but
+              drops success from 25.3% [16.9, 36.2] to 17.3% [10.4, 27.4] on the same tasks (Table IV in the
+              paper).</li>
           </ul>
         </div>
 
@@ -1539,7 +1596,7 @@
   <div class="container">
     <div class="content has-text-centered">
       <p>
-        <b>Zero-Shot VLA Adaptation with Retrieved Guidance</b> &mdash; Anonymous Authors, under review at CoRL 2026.
+        <b>Zero-Shot VLA Adaptation with Retrieved Guidance</b> &mdash; Anonymous Authors, under review at ICRA 2027.
       </p>
       <p>
         Website adapted from the <a href="https://nerfies.github.io">Nerfies project page</a> template.

@@ -441,6 +441,11 @@
 
           <div class="publication-links">
             <span class="link-block">
+              <a href="#video" class="button is-dark is-rounded is-small">
+                <span>Video</span>
+              </a>
+            </span>
+            <span class="link-block">
               <a href="#method" class="button is-dark is-rounded is-small">
                 <span>Method</span>
               </a>
@@ -483,6 +488,28 @@
         and <b>Sim&rarr;Real</b> (Meta-World Sawyer demos to the real-world DROID setup) &mdash;
         all with the base VLA's weights completely frozen.
       </p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= Video -->
+<section class="section" id="video">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Supplementary Video</h2>
+        <video controls playsinline preload="metadata"
+               style="width:100%; border-radius:10px; background:#000; display:block;">
+          <source src="./static/videos/RAGu_ICRA2027_video.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <p class="figure-caption has-text-centered" style="margin-top:0.75rem;">
+          Three-minute overview of RAGu (no narration; all explanations are on screen): the
+          Filter&nbsp;&rarr;&nbsp;Warp&nbsp;&rarr;&nbsp;Retrieve&nbsp;&rarr;&nbsp;Steer pipeline, real-robot
+          comparisons against &pi;<sub>0.5</sub>, Omniguide and RiCL, and the real&rarr;sim, sim&rarr;real
+          and cross-morphology transfer results.
+        </p>
+      </div>
     </div>
   </div>
 </section>
@@ -1098,36 +1125,43 @@
             <table class="paper-table sim-table">
               <thead>
                 <tr>
-                  <th class="task">Selection rule</th>
-                  <th>EE SPARC &uarr;</th>
-                  <th>Path (m) &darr;</th>
-                  <th>Speed (cm/s)</th>
+                  <th class="task" rowspan="2">Task</th>
+                  <th colspan="3" class="grp">RAGu (1 traj)</th>
+                  <th colspan="3" class="grp">RAGu (min dist)</th>
+                  <th colspan="3">RAGu (min grad, default)</th>
+                </tr>
+                <tr>
+                  <th>EE SPARC &uarr;</th><th>Path (m) &darr;</th><th class="grp">Speed (cm/s)</th>
+                  <th>EE SPARC &uarr;</th><th>Path (m) &darr;</th><th class="grp">Speed (cm/s)</th>
+                  <th>EE SPARC &uarr;</th><th>Path (m) &darr;</th><th>Speed (cm/s)</th>
                 </tr>
               </thead>
               <tbody>
-              <tr><td class="task">RAGu (1 reference traj)</td><td class="best">&minus;9.93</td><td class="best">4.61</td><td>8.20</td></tr>
-              <tr><td class="task">RAGu (min dist)</td><td>&minus;11.74</td><td>5.79</td><td>7.09</td></tr>
-              <tr><td class="task">RAGu (min grad, default)</td><td>&minus;10.30</td><td>5.67</td><td class="best">8.37</td></tr>
+              <tr><td class="task">BananaInBowl</td><td>&minus;8.62</td><td>3.63</td><td class="grp">7.30</td><td>&minus;10.01</td><td>3.69</td><td class="grp">6.93</td><td>&minus;10.34</td><td>6.06</td><td>7.30</td></tr>
+              <tr><td class="task">MouseOnKeyboard</td><td>&minus;10.71</td><td>5.33</td><td class="grp">8.80</td><td>&minus;12.00</td><td>4.43</td><td class="grp">7.46</td><td>&minus;11.35</td><td>5.46</td><td>8.40</td></tr>
+              <tr><td class="task">MustardAboveRaisin</td><td>&minus;10.47</td><td>4.86</td><td class="grp">8.50</td><td>&minus;13.20</td><td>9.25</td><td class="grp">6.90</td><td>&minus;9.21</td><td>5.49</td><td>9.40</td></tr>
+              <tr class="mean"><td class="task">Average</td><td>&minus;9.93</td><td>4.61</td><td class="grp">8.20</td><td>&minus;11.74</td><td>5.79</td><td class="grp">7.10</td><td>&minus;10.30</td><td>5.67</td><td>8.37</td></tr>
               </tbody>
             </table>
           </div>
           <p class="figure-caption">
             <span class="figtag">Ablation of Secondary Retrieval: candidate selection rule (Table IV in the paper).</span>
-            Trajectory metrics averaged over the three RoboLab tasks of the RoboLab evaluation table above
-            (<i>BananaInBowl</i>, <i>MouseOnKeyboard</i>, <i>MustardAboveRaisin</i>; 25 rollouts per task, 75 in
-            total), with the same pool of 100 warped DROID demonstrations, the same top-<i>N</i> candidates, and the
-            same guidance scale &gamma;; only the rule that picks the guiding trajectory changes.
-            <i>1 reference traj</i> uses only the Primary Retrieval reference, i.e., the DTW top-1 candidate, with no
+            Trajectory metrics (25 rollouts per task) for the three RoboLab tasks of the RoboLab evaluation table
+            above (<i>BananaInBowl</i>, <i>MouseOnKeyboard</i>, <i>MustardAboveRaisin</i>), with the same pool of
+            100 warped DROID demonstrations, the same top-<i>N</i> candidates, and the same guidance scale &gamma;;
+            only the rule that picks the guiding trajectory changes. The <i>Average</i> row is the mean over the
+            three tasks (75 rollouts).
+            <i>1 traj</i> uses only the Primary Retrieval reference, i.e., the DTW top-1 candidate, with no
             inference-time selection; <i>min dist</i> selects arg&thinsp;min<sub><i>i</i></sub>
             <i>C<sub>i</sub></i>(<i>X<sub>t</sub></i>) (Eq.&nbsp;3 in the paper), i.e., standard nearest-neighbor
             retrieval in trajectory space; <i>min grad</i> selects arg&thinsp;min<sub><i>i</i></sub>
             &#8214;&nabla;<sub><i>A</i><sub>0</sub></sub><i>C<sub>i</sub></i>(<i>X<sub>t</sub></i>)&#8214;<sub>2</sub>
             (Eq.&nbsp;4, the RAGu default). EE SPARC is unitless and higher is smoother; Path is the end-effector
-            path length; Speed is the mean end-effector speed, reported for reference. Bold marks the best value per
-            column. The <i>1 reference traj</i> and <i>min grad</i> rows are the three-task averages of the
-            1-trajectory and 100-trajectory columns of the trajectory-quality table above.
+            path length; Speed is the mean end-effector speed, reported for reference. The <i>1 traj</i> and
+            <i>min grad</i> columns coincide, for these three tasks, with the 1-trajectory and 100-trajectory columns
+            of the trajectory-quality table above.
             Replacing gradient-norm selection with nearest-neighbor selection (<i>min dist</i>) yields markedly less
-            smooth (EE SPARC &minus;11.74 vs. &minus;10.30) and slower (7.09 vs. 8.37&nbsp;cm/s) motion at nearly the
+            smooth (EE SPARC &minus;11.74 vs. &minus;10.30) and slower (7.10 vs. 8.37&nbsp;cm/s) motion at nearly the
             same path length (5.79 vs. 5.67&nbsp;m): the geometrically nearest candidate is not necessarily one the
             policy can follow, and the policy repeatedly corrects toward it. A small gradient norm could in principle
             also arise from low kinematic sensitivity rather than proximity; the smoother and faster execution at
@@ -1204,7 +1238,7 @@
             <li><b>Gradient-norm selection beats nearest-neighbor selection.</b> With the demonstration pool,
               the top-<i>N</i> candidates and &gamma; held fixed on three RoboLab tasks, picking the guiding
               trajectory by nearest neighbor (<i>min dist</i>) gives less smooth (EE SPARC &minus;11.74 vs.
-              &minus;10.30) and slower (7.09 vs. 8.37&nbsp;cm/s) motion than RAGu&rsquo;s gradient-norm rule
+              &minus;10.30) and slower (7.10 vs. 8.37&nbsp;cm/s) motion than RAGu&rsquo;s gradient-norm rule
               (<i>min grad</i>) at nearly the same path length. A single curated reference is smoother still but
               drops success from 25.3% [16.9, 36.2] to 17.3% [10.4, 27.4] on the same tasks (Table IV in the
               paper).</li>
